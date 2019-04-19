@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
  */
 @RestController
 @RequestMapping("/observation")
-@CrossOrigin(origins = {"${app.api_host}","http://localhost","http://in-situ.theia-land.fr"})
+@CrossOrigin(origins = {"http://localhost","http://in-situ.theia-land.fr"})
 public class ObservationsController {
     
     /**
