@@ -30,7 +30,7 @@ public class ObservationLite {
      * The observed property is a characteristic of the feature of interest. It identifies or describes the phenomenon
      * for which the observation is made.
      */
-    private ObservedProperty observedProperty;
+    private List<ObservedProperty> observedProperties;
 
 //    /**
 //     * List of the temporalextent of the resulting the aggregation by observed property name at a given location. For result that are not time series, the date acquisition of the observation is
@@ -51,8 +51,8 @@ public class ObservationLite {
         return featureOfInterest;
     }
 
-    public ObservedProperty getObservedProperty() {
-        return observedProperty;
+    public List<ObservedProperty> getObservedProperties() {
+        return observedProperties;
     }
 
 }

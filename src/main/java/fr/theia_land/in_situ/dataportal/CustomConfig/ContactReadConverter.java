@@ -22,8 +22,6 @@ import org.springframework.data.convert.ReadingConverter;
  */
 @ReadingConverter
 public class ContactReadConverter implements Converter<Document, Contact> {
-
-    
     /**
      * Map DBObject to Contact inherited class according to the MongoDB document attributes
      * @param source MongoDB Document object

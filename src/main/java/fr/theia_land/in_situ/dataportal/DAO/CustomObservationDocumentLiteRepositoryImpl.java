@@ -126,18 +126,18 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         Set<List<String>> documentIds = new HashSet<>();
         mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations)
                 .withOptions(options), "observationsLite", MapItemId.class).getMappedResults().forEach(item -> {
-            documentIds.add(item.getDocumentId());
+            documentIds.add(item.getDocumentIds());
         });
         /**
          * From the list of ids resulting the query, the list of station mesuring the observtions is queried from
          * "mapItems" collection. The interesction of ids between ids resulting the query filters and ids at the station
          * is calculated before to return the mapItems to be mapped.
          */
-        List<MapItem> mapItems = mongoTemplate.find(Query.query(Criteria.where("documentId").in(documentIds)), MapItem.class, "mapItems");
+        List<MapItem> mapItems = mongoTemplate.find(Query.query(Criteria.where("documentIds").in(documentIds)), MapItem.class, "mapItems");
         mapItems.forEach(item -> {
-            Set<List<String>> documentIdsTmp = new HashSet<>(item.getDocumentId());
+            Set<String> documentIdsTmp = new HashSet<>(item.getDocumentIds());
             documentIdsTmp.retainAll(documentIds);
-            item.setDocumentId(new ArrayList<>(documentIdsTmp));
+            item.setDocumentIds(new ArrayList<>(documentIdsTmp));
         });
         responseDocument.setMapItems(mapItems);
         /**

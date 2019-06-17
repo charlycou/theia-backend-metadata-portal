@@ -37,6 +37,19 @@ public class ObservedProperty {
      * A list of URI of Theia categories to be associated
      */
     private List<String> theiaCategories;
+    
+    /**
+     * Theia Variable 
+     */
+    private TheiaVariable theiaVariable;
+
+    public TheiaVariable getTheiaVariable() {
+        return theiaVariable;
+    }
+
+    public void setTheiaVariable(TheiaVariable theiaVariable) {
+        this.theiaVariable = theiaVariable;
+    }
 
     public List<I18n> getName() {
         return name;

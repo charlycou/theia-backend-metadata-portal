@@ -14,17 +14,17 @@ import java.util.List;
  */
 public class MapItemId {
 
-    private List<String> documentId = new ArrayList<>();
+    private List<String> documentIds = new ArrayList<>();
 
     public MapItemId() {
     }
 
-    public void setDocumentId(List<String> documentId) {
-        this.documentId = documentId;
+    public void setDocumentIds(List<String> documentIds) {
+        this.documentIds = documentIds;
     }
 
-    public List<String> getDocumentId() {
-        return documentId;
+    public List<String> getDocumentIds() {
+        return documentIds;
     }
 
 }

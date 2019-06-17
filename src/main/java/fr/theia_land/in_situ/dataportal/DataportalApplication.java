@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootApplication
 public class DataportalApplication {
 
-    @Value("${app.api_host}")
-    public String apiHost;
-
     public static void main(String[] args) {
         SpringApplication.run(DataportalApplication.class, args);
     }
@@ -27,6 +24,6 @@ public class DataportalApplication {
     @GetMapping("/message")
     String message() {
         
-        return "Spring Boot api host : "+ apiHost;
+        return "Spring Boot backend!!";
     }
 }

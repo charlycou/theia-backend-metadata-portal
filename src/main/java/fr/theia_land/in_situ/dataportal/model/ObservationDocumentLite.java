@@ -19,13 +19,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "observationsLite")
 public class ObservationDocumentLite {
 
-    private List<String> documentId = new ArrayList<>();
+    private List<String> documentIds = new ArrayList<>();
     private ProducerLite producer;
     private DatasetLite dataset;
     private ObservationLite observation;
 
-    public List<String> getDocumentId() {
-        return documentId;
+    public List<String> getDocumentIds() {
+        return documentIds;
     }
 
     public ProducerLite getProducer() {
@@ -44,8 +44,8 @@ public class ObservationDocumentLite {
         this.dataset = dataset;
     }
 
-    public void setDocumentId(List<String> documentId) {
-        this.documentId = documentId;
+    public void setDocumentIds(List<String> documentIds) {
+        this.documentIds = documentIds;
     }
 
     public void setObservation(ObservationLite observation) {
