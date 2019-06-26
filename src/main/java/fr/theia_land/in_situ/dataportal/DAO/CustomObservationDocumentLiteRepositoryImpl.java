@@ -358,7 +358,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             PopupContent.VariableNameAndId variableNameAndId = new PopupContent.VariableNameAndId();
             variableNameAndId.setIds(item.getDocumentIds());
             if (item.getObservation().getObservedProperties().get(0).getTheiaVariable() != null) {
-                variableNameAndId.setTheiaVariableName(item.getObservation().getObservedProperties().get(0).getTheiaVariable());
+                variableNameAndId.setTheiaVariableName(item.getObservation().getObservedProperties().get(0).getTheiaVariable().getPrefLabel());
             } else {
                 List<List<I18n>> producerVariableNames = new ArrayList();
                 item.getObservation().getObservedProperties().forEach(element -> {

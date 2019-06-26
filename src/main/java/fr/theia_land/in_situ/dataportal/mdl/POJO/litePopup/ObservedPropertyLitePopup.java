@@ -6,6 +6,7 @@
 package fr.theia_land.in_situ.dataportal.mdl.POJO.litePopup;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
 import java.util.List;
 
 /**
@@ -18,15 +19,16 @@ public class ObservedPropertyLitePopup {
      * Name of the variable
      */
     private List<I18n> name;
-    private List<I18n> theiaVariable ;
+    private TheiaVariable theiaVariable ;
 
-    public List<I18n> getTheiaVariable() {
+    public TheiaVariable getTheiaVariable() {
         return theiaVariable;
     }
 
-    public void setTheiaVariable(List<I18n> theiaVariable) {
+    public void setTheiaVariable(TheiaVariable theiaVariable) {
         this.theiaVariable = theiaVariable;
     }
+
 
     public List<I18n> getName() {
         return name;
