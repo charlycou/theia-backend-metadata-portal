@@ -232,39 +232,41 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                 Instant from = Instant.parse(tmpExtent.getString("fromDate"));
                 Instant to = Instant.parse(tmpExtent.getString("toDate"));
                 temporalExtentCriterias.add(
-                        Criteria.where("observation.temporalExtent").elemMatch(
-                                new Criteria().orOperator(
-                                        new Criteria().andOperator(
-                                                Criteria.where("dateBeg")
-                                                        .gte(from)
-                                                        .lte(to),
-                                                Criteria.where("dateEnd")
-                                                        .gte(from)
-                                                        .lte(to)
-                                        ),
-                                        new Criteria().andOperator(
-                                                Criteria.where("dateBeg")
-                                                        .lte(from)
-                                                        .lte(to),
-                                                Criteria.where("dateEnd")
-                                                        .gte(from)
-                                                        .gte(to)
-                                        ),
-                                        new Criteria().andOperator(
-                                                Criteria.where("dateBeg")
-                                                        .lte(from)
-                                                        .lte(to),
-                                                Criteria.where("dateEnd")
-                                                        .gte(from)
-                                                        .lte(to)
-                                        ),
-                                        new Criteria().andOperator(
-                                                Criteria.where("dateBeg")
-                                                        .gte(from)
-                                                        .lte(to),
-                                                Criteria.where("dateEnd")
-                                                        .gte(from)
-                                                        .gte(to)
+                        Criteria.where("observation.temporalExtents").elemMatch(
+                                new Criteria().elemMatch(
+                                        new Criteria().orOperator(
+                                                new Criteria().andOperator(
+                                                        Criteria.where("dateBeg")
+                                                                .gte(from)
+                                                                .lte(to),
+                                                        Criteria.where("dateEnd")
+                                                                .gte(from)
+                                                                .lte(to)
+                                                ),
+                                                new Criteria().andOperator(
+                                                        Criteria.where("dateBeg")
+                                                                .lte(from)
+                                                                .lte(to),
+                                                        Criteria.where("dateEnd")
+                                                                .gte(from)
+                                                                .gte(to)
+                                                ),
+                                                new Criteria().andOperator(
+                                                        Criteria.where("dateBeg")
+                                                                .lte(from)
+                                                                .lte(to),
+                                                        Criteria.where("dateEnd")
+                                                                .gte(from)
+                                                                .lte(to)
+                                                ),
+                                                new Criteria().andOperator(
+                                                        Criteria.where("dateBeg")
+                                                                .gte(from)
+                                                                .lte(to),
+                                                        Criteria.where("dateEnd")
+                                                                .gte(from)
+                                                                .gte(to)
+                                                )
                                         )
                                 )
                         )
@@ -366,7 +368,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                 });
                 variableNameAndId.setProducerVariableNames(producerVariableNames);
             }
-                
+
             variableNameAndIds.add(variableNameAndId);
         });
 
