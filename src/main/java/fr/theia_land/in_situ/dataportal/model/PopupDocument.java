@@ -14,16 +14,16 @@ import java.util.List;
  * @author coussotc
  */
 public class PopupDocument {
-    private List<String> documentId;
+    private List<String> documentIds;
     private ProducerLitePopup producer;
     private ObservationLitePopup observation;
 
-    public List<String> getDocumentId() {
-        return documentId;
+    public List<String> getDocumentIds() {
+        return documentIds;
     }
 
-    public void setDocumentId(List<String> documentId) {
-        this.documentId = documentId;
+    public void setDocumentIds(List<String> documentIds) {
+        this.documentIds = documentIds;
     }
 
     public ProducerLitePopup getProducer() {

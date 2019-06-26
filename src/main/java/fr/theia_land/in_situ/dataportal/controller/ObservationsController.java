@@ -24,6 +24,7 @@ import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentLiteRepository;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  *
@@ -41,6 +42,11 @@ public class ObservationsController {
     private ObservationDocumentLiteRepository observationDocumentLiteRepository;
     @Autowired
     private ObservationDocumentRepository observationDocumentRepository;
+    
+    @GetMapping("/test")
+    public String test() {
+        return "coucou";
+    }
 
     /**
      * method used to show detailed information about observations

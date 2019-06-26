@@ -12,19 +12,26 @@ import java.util.List;
  *
  * @author coussotc
  */
-public class MapItemId {
+public class ObservationLiteId {
 
     private List<String> documentIds = new ArrayList<>();
 
-    public MapItemId() {
+    public ObservationLiteId() {
     }
-
-    public void setDocumentIds(List<String> documentIds) {
+    
+    public ObservationLiteId(List<String> documentIds) {
         this.documentIds = documentIds;
     }
 
     public List<String> getDocumentIds() {
         return documentIds;
     }
+
+    public void setDocumentIds(List<String> documentIds) {
+        this.documentIds = documentIds;
+    }
+
+ 
+
 
 }

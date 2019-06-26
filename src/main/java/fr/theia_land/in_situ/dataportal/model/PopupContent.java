@@ -15,15 +15,24 @@ import java.util.List;
 public class PopupContent {
     
     public static class VariableNameAndId {
-        private List<I18n> variableName;
-        private List<String> ids;
+        private List<I18n> theiaVariableName;
+        private List<List<I18n>> producerVariableNames;
 
-        public List<I18n> getVariableName() {
-            return variableName;
+        public List<List<I18n>> getProducerVariableNames() {
+            return producerVariableNames;
         }
 
-        public void setVariableName(List<I18n> variableName) {
-            this.variableName = variableName;
+        public void setProducerVariableNames(List<List<I18n>> producerVariableNames) {
+            this.producerVariableNames = producerVariableNames;
+        }
+        private List<String> ids;
+
+        public List<I18n> getTheiaVariableName() {
+            return theiaVariableName;
+        }
+
+        public void setTheiaVariableName(List<I18n> theiaVariableName) {
+            this.theiaVariableName = theiaVariableName;
         }
 
         public List<String> getIds() {

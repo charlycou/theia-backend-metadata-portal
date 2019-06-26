@@ -5,8 +5,9 @@
  */
 package fr.theia_land.in_situ.dataportal.DAO;
 
+import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
 import fr.theia_land.in_situ.dataportal.model.MapItem;
-import fr.theia_land.in_situ.dataportal.model.MapItemId;
+import fr.theia_land.in_situ.dataportal.model.ObservationLiteId;
 import fr.theia_land.in_situ.dataportal.model.ObservationDocumentLite;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.PopupDocument;
@@ -123,21 +124,29 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         /**
          * Get the list of the observation ids that are resulting the query.
          */
-        Set<List<String>> documentIds = new HashSet<>();
-        mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations)
-                .withOptions(options), "observationsLite", MapItemId.class).getMappedResults().forEach(item -> {
-            documentIds.add(item.getDocumentIds());
+        Set<List<String>> documentIdsFromObservationLite = new HashSet<>();
+        //Get the list of "documentIds" of ObservationLite collection
+        List<ObservationLiteId> observationLiteIds = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations)
+                .withOptions(options), "observationsLite", ObservationLiteId.class).getMappedResults();
+        //Store each "documentIds" in documentIdsFromObservationLite Set object
+        observationLiteIds.forEach(item -> {
+            documentIdsFromObservationLite.add(item.getDocumentIds());
         });
         /**
-         * From the list of ids resulting the query, the list of station mesuring the observtions is queried from
-         * "mapItems" collection. The interesction of ids between ids resulting the query filters and ids at the station
-         * is calculated before to return the mapItems to be mapped.
+         * From the list of ids resulting the query on "observationLite" collection, the list of station mesuring the
+         * observtions is queried from "mapItems" collection. The document of the collection "mapItems" that have a
+         * field "doucmentIds" containing at least one element of the "documentIdsFromObservationLite" Set object are
+         * queried.
          */
-        List<MapItem> mapItems = mongoTemplate.find(Query.query(Criteria.where("documentIds").in(documentIds)), MapItem.class, "mapItems");
+        List<MapItem> mapItems = mongoTemplate.find(Query.query(Criteria.where("documentIds").in(documentIdsFromObservationLite)), MapItem.class, "mapItems");
         mapItems.forEach(item -> {
-            Set<String> documentIdsTmp = new HashSet<>(item.getDocumentIds());
-            documentIdsTmp.retainAll(documentIds);
-            item.setDocumentIds(new ArrayList<>(documentIdsTmp));
+            /**
+             * For each document queried from the "mapItems" collection, the ids from the field documentIds that are not
+             * present in "documentIdsFromObservationLite" Set object are removed.
+             */
+            Set<List<String>> documentIdsFromMapItems = new HashSet<>(item.getDocumentIds());
+            documentIdsFromMapItems.retainAll(documentIdsFromObservationLite);
+            item.setDocumentIds(new ArrayList<>(documentIdsFromMapItems));
         });
         responseDocument.setMapItems(mapItems);
         /**
@@ -263,7 +272,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             });
             aggregationOperations.add(Aggregation.match(new Criteria().orOperator(temporalExtentCriterias.toArray(new Criteria[temporalExtentCriterias.size()]))));
         }
-        
+
         if (!jsonQueryElement.isNull("spatialExtent")) {
             List<Criteria> spatialExtentCriterias = new ArrayList<>();
             JSONArray features = jsonQueryElement.getJSONObject("spatialExtent").getJSONArray("features");
@@ -279,7 +288,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             });
             aggregationOperations.add(Aggregation.match(new Criteria().orOperator(spatialExtentCriterias.toArray(new Criteria[spatialExtentCriterias.size()]))));
         }
-        
+
         /**
          * Match operation for each bucket element query parameters
          */
@@ -331,10 +340,11 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                 itemArray2.add((String) item2);
             });
             documentIds.add(itemArray2);
+            // documentIds.add(item1.toString());
         });
         //Query the "observationsLite" collection using the newly created documentIds Set object
         List<PopupDocument> result = mongoTemplate.aggregate(Aggregation.newAggregation(
-                match(Criteria.where("documentId").in(documentIds))), "observationsLite", PopupDocument.class).getMappedResults();
+                match(Criteria.where("documentIds").in(documentIds))), "observationsLite", PopupDocument.class).getMappedResults();
 
         //Set the PopupContent Object to be returned
         PopupContent popupContent = new PopupContent();
@@ -346,8 +356,17 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         List<PopupContent.VariableNameAndId> variableNameAndIds = new ArrayList<>();
         result.forEach(item -> {
             PopupContent.VariableNameAndId variableNameAndId = new PopupContent.VariableNameAndId();
-            variableNameAndId.setIds(item.getDocumentId());
-            variableNameAndId.setVariableName(item.getObservation().getObservedProperty().getName());
+            variableNameAndId.setIds(item.getDocumentIds());
+            if (item.getObservation().getObservedProperties().get(0).getTheiaVariable() != null) {
+                variableNameAndId.setTheiaVariableName(item.getObservation().getObservedProperties().get(0).getTheiaVariable());
+            } else {
+                List<List<I18n>> producerVariableNames = new ArrayList();
+                item.getObservation().getObservedProperties().forEach(element -> {
+                    producerVariableNames.add(element.getName());
+                });
+                variableNameAndId.setProducerVariableNames(producerVariableNames);
+            }
+                
             variableNameAndIds.add(variableNameAndId);
         });
 

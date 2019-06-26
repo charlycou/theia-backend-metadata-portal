@@ -6,6 +6,7 @@
 package fr.theia_land.in_situ.dataportal.mdl.POJO.litePopup;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.FeatureOfInterest;
+import java.util.List;
 
 /**
  *
@@ -27,7 +28,7 @@ public class ObservationLitePopup {
      * The observed property is a characteristic of the feature of interest. It identifies or describes the phenomenon
      * for which the observation is made.
      */
-    private ObservedPropertyLitePopup observedProperty;
+    private List<ObservedPropertyLitePopup> observedProperties;
     /**
      * The temporalextent of the result. For result that are not time series, the date acquisition of the observation is
      * precised. For results that are not temporal (e.g. geological map the date of acquisition of the observation is
@@ -43,29 +44,17 @@ public class ObservationLitePopup {
         return featureOfInterest;
     }
 
+    public List<ObservedPropertyLitePopup> getObservedProperties() {
+        return observedProperties;
+    }
+
+    public void setObservedProperties(List<ObservedPropertyLitePopup> observedProperties) {
+        this.observedProperties = observedProperties;
+    }
+
     public void setFeatureOfInterest(FeatureOfInterest featureOfInterest) {
         this.featureOfInterest = featureOfInterest;
     }
     
-    
 
-//    public void setObservedProperty(ObservedPropertyLiteMap observedProperty) {
-//        this.observedProperty = observedProperty;
-//    }
-//
-//    public ObservedPropertyLiteMap getObservedProperty() {
-//        return observedProperty;
-//    }
-
-//    public TemporalExtent getTemporalExtent() {
-//        return temporalExtent;
-//    }
-
-    public ObservedPropertyLitePopup getObservedProperty() {
-        return observedProperty;
-    }
-
-    public void setObservedProperty(ObservedPropertyLitePopup observedProperty) {
-        this.observedProperty = observedProperty;
-    }
 }

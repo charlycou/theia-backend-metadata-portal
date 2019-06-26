@@ -15,15 +15,15 @@ import java.util.List;
  */
 public class MapItem {
 
-    private List<String> documentIds = new ArrayList<>();
+    private List<List<String>> documentIds;
     private String producerId;
     private SamplingFeature samplingFeature;
 
-    public List<String> getDocumentIds() {
+    public List<List<String>> getDocumentIds() {
         return documentIds;
     }
 
-    public void setDocumentIds(List<String> documentIds) {
+    public void setDocumentIds(List<List<String>> documentIds) {
         this.documentIds = documentIds;
     }
 
@@ -42,5 +42,5 @@ public class MapItem {
     public void setSamplingFeature(SamplingFeature samplingFeature) {
         this.samplingFeature = samplingFeature;
     }
-   
+
 }
