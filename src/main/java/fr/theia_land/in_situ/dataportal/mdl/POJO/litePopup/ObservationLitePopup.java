@@ -15,11 +15,6 @@ import java.util.List;
 public class ObservationLitePopup {
 
     /**
-     * Id of the observation. Corresponds to the trigramme of the provider, the number of the dataset, and the number of
-     * the observation of the dataset separated by underscores (ex: AMA_2_36);
-     */
-//    private String observationId;
-    /**
      * The feature of interest is an abstraction of a real-world object. It's the spatial object sample by the
      * Observation
      */
@@ -28,33 +23,39 @@ public class ObservationLitePopup {
      * The observed property is a characteristic of the feature of interest. It identifies or describes the phenomenon
      * for which the observation is made.
      */
-    private List<ObservedPropertyLitePopup> observedProperties;
+    private ObservedPropertyLitePopup observedProperty;
+
     /**
-     * The temporalextent of the result. For result that are not time series, the date acquisition of the observation is
-     * precised. For results that are not temporal (e.g. geological map the date of acquisition of the observation is
-     * precised followed by a 31-12-9999 00:00:00
+     * The id of the observation
      */
-//    private TemporalExtent temporalExtent;
+    private String observationId;
 
-//    public String getObservationId() {
-//        return observationId;
-//    }
+    public String getObservationId() {
+        return observationId;
+    }
 
+    public void setObservationId(String observationId) {
+        this.observationId = observationId;
+    }
+    
+    
+    
     public FeatureOfInterest getFeatureOfInterest() {
         return featureOfInterest;
     }
-
-    public List<ObservedPropertyLitePopup> getObservedProperties() {
-        return observedProperties;
-    }
-
-    public void setObservedProperties(List<ObservedPropertyLitePopup> observedProperties) {
-        this.observedProperties = observedProperties;
-    }
-
+    
     public void setFeatureOfInterest(FeatureOfInterest featureOfInterest) {
         this.featureOfInterest = featureOfInterest;
     }
+
+    public ObservedPropertyLitePopup getObservedProperty() {
+        return observedProperty;
+    }
+
+    public void setObservedProperty(ObservedPropertyLitePopup observedProperty) {
+        this.observedProperty = observedProperty;
+    }
+    
     
 
 }

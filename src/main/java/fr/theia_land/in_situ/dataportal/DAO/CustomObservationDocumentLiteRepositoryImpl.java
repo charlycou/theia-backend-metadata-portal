@@ -7,7 +7,6 @@ package fr.theia_land.in_situ.dataportal.DAO;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
 import fr.theia_land.in_situ.dataportal.model.MapItem;
-import fr.theia_land.in_situ.dataportal.model.ObservationLiteId;
 import fr.theia_land.in_situ.dataportal.model.ObservationDocumentLite;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.PopupDocument;
@@ -18,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +41,9 @@ import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import static org.springframework.data.mongodb.core.aggregation.ArrayOperators.Filter.filter;
 import static org.springframework.data.mongodb.core.aggregation.ComparisonOperators.Eq.valueOf;
 import org.springframework.data.mongodb.core.aggregation.FacetOperation;
+import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
 import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -109,44 +112,55 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         ResponseDocument responseDocument = new ResponseDocument();
 
         /**
-         * The aggregation pipeline is executed to obtain the list of ObservationDocument lite corresponding to the
-         * query. The following result is Paginated and stored into the ResponseDocument object
-         */
-        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
-        responseDocument.setObservationDocumentLitePage(getObservationsPage(queryElements, PageRequest.of(0, 10)));
-
-        /**
          * Aggregation pipeline to be executed to find the observation matching the query. The result is stored as
          * MapItem.class, that are very light weight object to be added onto the map
          */
         List<AggregationOperation> aggregationOperations = setMatchOperationUsingFilters(queryElements);
 
         /**
+         * The aggregation pipeline is executed to obtain the list of ObservationDocument lite corresponding to the
+         * query. The following result is Paginated and stored into the ResponseDocument object
+         */
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        responseDocument.setObservationDocumentLitePage(getObservationsPage(aggregationOperations, PageRequest.of(0, 10)));
+
+        UnwindOperation u1 = Aggregation.unwind("observations");
+        ProjectionOperation p1 = Aggregation.project().and("observations.observationId").as("observationId").andExclude("_id");
+        aggregationOperations.add(u1);
+        aggregationOperations.add(p1);
+
+        /**
          * Get the list of the observation ids that are resulting the query.
          */
-        Set<List<String>> documentIdsFromObservationLite = new HashSet<>();
-        //Get the list of "documentIds" of ObservationLite collection
-        List<ObservationLiteId> observationLiteIds = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations)
-                .withOptions(options), "observationsLite", ObservationLiteId.class).getMappedResults();
-        //Store each "documentIds" in documentIdsFromObservationLite Set object
-        observationLiteIds.forEach(item -> {
-            documentIdsFromObservationLite.add(item.getDocumentIds());
+        //Get the list of "observationId" of ObservationLite collection
+        List<String> observationLiteIds = new ArrayList();
+        mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations)
+                .withOptions(options), "observationsLite", Document.class).getMappedResults().forEach((t) -> {
+            observationLiteIds.add(t.get("observationId").toString());
         });
+
+        /**
+         * Remove the two last aggregation operation that are not used for the following operations.
+         */
+        aggregationOperations.remove(u1);
+        aggregationOperations.remove(p1);
+
         /**
          * From the list of ids resulting the query on "observationLite" collection, the list of station mesuring the
          * observtions is queried from "mapItems" collection. The document of the collection "mapItems" that have a
          * field "doucmentIds" containing at least one element of the "documentIdsFromObservationLite" Set object are
          * queried.
          */
-        List<MapItem> mapItems = mongoTemplate.find(Query.query(Criteria.where("documentIds").in(documentIdsFromObservationLite)), MapItem.class, "mapItems");
+//        List<MapItem> mapItems = mongoTemplate.find(Query.query(Criteria.where("documentIds").in(documentIdsFromObservationLite)), MapItem.class, "mapItems");
+        List<MapItem> mapItems = mongoTemplate.find(Query.query(Criteria.where("observationIds").in(observationLiteIds)), MapItem.class, "mapItems");
         mapItems.forEach(item -> {
             /**
              * For each document queried from the "mapItems" collection, the ids from the field documentIds that are not
              * present in "documentIdsFromObservationLite" Set object are removed.
              */
-            Set<List<String>> documentIdsFromMapItems = new HashSet<>(item.getDocumentIds());
-            documentIdsFromMapItems.retainAll(documentIdsFromObservationLite);
-            item.setDocumentIds(new ArrayList<>(documentIdsFromMapItems));
+            Set<String> observationIdsFromMapItems = new HashSet<>(item.getObservationIds());
+            observationIdsFromMapItems.retainAll(observationLiteIds);
+            item.setObservationIds(new ArrayList<>(observationIdsFromMapItems));
         });
         responseDocument.setMapItems(mapItems);
         /**
@@ -180,19 +194,18 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     /**
      * Method used to change the page of the paginated result.
      *
-     * @param queryElements String that can be parsed into json containing the filter to be queried
+     * @param aggregationOperations List of MatchOperation defined filters form user interface
      * @param pageable Pageable object containing the number and the length of the page to be returned
      * @return Page object containing the results
      */
     @Override
-    public Page<ObservationDocumentLite> getObservationsPage(String queryElements, Pageable pageable) {
-        //Aggregation pipeline to be executed to find the observation matching the query
-        List<AggregationOperation> aggregationOperations = setMatchOperationUsingFilters(queryElements);
+    public Page<ObservationDocumentLite> getObservationsPage(List<AggregationOperation> aggregationOperations, Pageable pageable) {
         //Add aggregationOperation to pipeline to set pagination
-        aggregationOperations.add(skip((long) pageable.getPageNumber() * pageable.getPageSize()));
-        aggregationOperations.add(limit(pageable.getPageSize()));
+        List<AggregationOperation> aggregationOperationsPage = new ArrayList(aggregationOperations);
+        aggregationOperationsPage.add(skip((long) pageable.getPageNumber() * pageable.getPageSize()));
+        aggregationOperationsPage.add(limit(pageable.getPageSize()));
         AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
-        List<ObservationDocumentLite> result = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations)
+        List<ObservationDocumentLite> result = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsPage)
                 .withOptions(options), "observationsLite", ObservationDocumentLite.class).getMappedResults();
         return new PageImpl<>(result, pageable, result.size());
     }
@@ -203,7 +216,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
      * @param queryElements String that can be parsed into json object.
      * @return List of AggregationOperation composed of MatchOperation of each filter of the queryElements parameter
      */
-    private List<AggregationOperation> setMatchOperationUsingFilters(String queryElements) {
+    public static List<AggregationOperation> setMatchOperationUsingFilters(String queryElements) {
         //Aggregation pipeline to be executed to find the observation matching the query
         List<AggregationOperation> aggregationOperations = new ArrayList<>();
 
@@ -226,53 +239,68 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
          * queried is outside the temporal extent of the document
          */
         if (jsonQueryElement.getJSONArray("temporalExtents").length() > 0) {
+
+            /**
+             * Need to unwind "observations" array fields of ObservationsLite collection before to perform the Match
+             * operation using the defined temporal extents. This allow to filter grouped observation that does not
+             * match the defined temporal extents
+             */
+            UnwindOperation u1 = unwind("observations");
+
             List<Criteria> temporalExtentCriterias = new ArrayList<>();
             jsonQueryElement.getJSONArray("temporalExtents").forEach(item -> {
                 JSONObject tmpExtent = (JSONObject) item;
                 Instant from = Instant.parse(tmpExtent.getString("fromDate"));
                 Instant to = Instant.parse(tmpExtent.getString("toDate"));
                 temporalExtentCriterias.add(
-                        Criteria.where("observation.temporalExtents").elemMatch(
-                                new Criteria().elemMatch(
-                                        new Criteria().orOperator(
-                                                new Criteria().andOperator(
-                                                        Criteria.where("dateBeg")
-                                                                .gte(from)
-                                                                .lte(to),
-                                                        Criteria.where("dateEnd")
-                                                                .gte(from)
-                                                                .lte(to)
-                                                ),
-                                                new Criteria().andOperator(
-                                                        Criteria.where("dateBeg")
-                                                                .lte(from)
-                                                                .lte(to),
-                                                        Criteria.where("dateEnd")
-                                                                .gte(from)
-                                                                .gte(to)
-                                                ),
-                                                new Criteria().andOperator(
-                                                        Criteria.where("dateBeg")
-                                                                .lte(from)
-                                                                .lte(to),
-                                                        Criteria.where("dateEnd")
-                                                                .gte(from)
-                                                                .lte(to)
-                                                ),
-                                                new Criteria().andOperator(
-                                                        Criteria.where("dateBeg")
-                                                                .gte(from)
-                                                                .lte(to),
-                                                        Criteria.where("dateEnd")
-                                                                .gte(from)
-                                                                .gte(to)
-                                                )
-                                        )
+                        new Criteria().orOperator(
+                                new Criteria().andOperator(
+                                        Criteria.where("observations.temporalExtent.dateBeg")
+                                                .gte(from)
+                                                .lte(to),
+                                        Criteria.where("observations.temporalExtent.dateEnd")
+                                                .gte(from)
+                                                .lte(to)
+                                ),
+                                new Criteria().andOperator(
+                                        Criteria.where("observations.temporalExtent.dateBeg")
+                                                .lte(from)
+                                                .lte(to),
+                                        Criteria.where("observations.temporalExtent.dateEnd")
+                                                .gte(from)
+                                                .gte(to)
+                                ),
+                                new Criteria().andOperator(
+                                        Criteria.where("observations.temporalExtent.dateBeg")
+                                                .lte(from)
+                                                .lte(to),
+                                        Criteria.where("observations.temporalExtent.dateEnd")
+                                                .gte(from)
+                                                .lte(to)
+                                ),
+                                new Criteria().andOperator(
+                                        Criteria.where("observations.temporalExtent.dateBeg")
+                                                .gte(from)
+                                                .lte(to),
+                                        Criteria.where("observations.temporalExtent.dateEnd")
+                                                .gte(from)
+                                                .gte(to)
                                 )
                         )
                 );
             });
+
+            /**
+             * GroupOperation to return the document according to the initial form (before unwind of "observations")
+             */
+            GroupOperation g1 = group("_id")
+                    .push("observations").as("observations")
+                    .first("producer").as("producer")
+                    .first("dataset").as("dataset");
+
+            aggregationOperations.add(u1);
             aggregationOperations.add(Aggregation.match(new Criteria().orOperator(temporalExtentCriterias.toArray(new Criteria[temporalExtentCriterias.size()]))));
+            aggregationOperations.add(g1);
         }
 
         if (!jsonQueryElement.isNull("spatialExtent")) {
@@ -334,42 +362,66 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         //parse the string ids parameter into JSON Object
         JSONObject jsonIds = new JSONObject(ids);
         //Parse json of ids into Set of List of String
-        Set<List<String>> documentIds = new HashSet<>();
+        Set<String> observationIdsFromMarker = new HashSet<>();
         jsonIds.getJSONArray("ids").forEach(item1 -> {
-            JSONArray itemArray1 = (JSONArray) item1;
-            List<String> itemArray2 = new ArrayList<>();
-            itemArray1.forEach(item2 -> {
-                itemArray2.add((String) item2);
-            });
-            documentIds.add(itemArray2);
-            // documentIds.add(item1.toString());
+            observationIdsFromMarker.add(item1.toString());
         });
         //Query the "observationsLite" collection using the newly created documentIds Set object
         List<PopupDocument> result = mongoTemplate.aggregate(Aggregation.newAggregation(
-                match(Criteria.where("documentIds").in(documentIds))), "observationsLite", PopupDocument.class).getMappedResults();
+                match(Criteria.where("observations.observationId").in(observationIdsFromMarker))), "observationsLite", PopupDocument.class).getMappedResults();
 
         //Set the PopupContent Object to be returned
         PopupContent popupContent = new PopupContent();
         popupContent.setProducerName(result.get(0).getProducer().getName());
         //Condition on station name since it is not a mandatory field
-        if (!result.get(0).getObservation().getFeatureOfInterest().getSamplingFeature().getName().isEmpty()) {
-            popupContent.setStationName(result.get(0).getObservation().getFeatureOfInterest().getSamplingFeature().getName());
+        if (!result.get(0).getObservations().get(0).getFeatureOfInterest().getSamplingFeature().getName().isEmpty()) {
+            popupContent.setStationName(result.get(0).getObservations().get(0).getFeatureOfInterest().getSamplingFeature().getName());
         }
+        /**
+         * List of variable name and Ids to print in the popup window
+         */
         List<PopupContent.VariableNameAndId> variableNameAndIds = new ArrayList<>();
+
         result.forEach(item -> {
-            PopupContent.VariableNameAndId variableNameAndId = new PopupContent.VariableNameAndId();
-            variableNameAndId.setIds(item.getDocumentIds());
-            if (item.getObservation().getObservedProperties().get(0).getTheiaVariable() != null) {
-                variableNameAndId.setTheiaVariableName(item.getObservation().getObservedProperties().get(0).getTheiaVariable().getPrefLabel());
-            } else {
-                List<List<I18n>> producerVariableNames = new ArrayList();
-                item.getObservation().getObservedProperties().forEach(element -> {
-                    producerVariableNames.add(element.getName());
-                });
-                variableNameAndId.setProducerVariableNames(producerVariableNames);
+            PopupContent.VariableNameAndId nameAndId = new PopupContent.VariableNameAndId();
+            /**
+             * Lists of Ids pointed by a given variable name
+             */
+            List<String> observationIdsFromObservationsLite = new ArrayList();
+            List<List<I18n>> producerVariableNamesFromObservationsLite = new ArrayList();
+            /**
+             * Theia variable name if it exists
+             */
+            //TheiaVariable theiaVariable = null;
+            if (item.getObservations().get(0).getObservedProperty().getTheiaVariable() != null) {
+                nameAndId.setTheiaVariableName(item.getObservations().get(0).getObservedProperty().getTheiaVariable().getPrefLabel());
             }
 
-            variableNameAndIds.add(variableNameAndId);
+            item.getObservations().forEach((t) -> {
+                //List to store all the observationId of one document from observationsLite collection
+                observationIdsFromObservationsLite.add(t.getObservationId());
+
+                //List to store all the producerVariableName of one document from observationsLite collection if theia variable
+                // is not defined
+                producerVariableNamesFromObservationsLite.add(t.getObservedProperty().getName());
+            });
+            nameAndId.setIds(observationIdsFromObservationsLite);
+            nameAndId.setProducerVariableNames(producerVariableNamesFromObservationsLite);
+            variableNameAndIds.add(nameAndId);
+
+//            PopupContent.VariableNameAndId variableNameAndId = new PopupContent.VariableNameAndId();
+//            variableNameAndId.setIds(observationIdsFromObservationsLite);
+//            if (item.getObservation().getObservedProperties().get(0).getTheiaVariable() != null) {
+//                variableNameAndId.setTheiaVariableName(item.getObservation().getObservedProperties().get(0).getTheiaVariable().getPrefLabel());
+//            } else {
+//                List<List<I18n>> producerVariableNames = new ArrayList();
+//                item.getObservation().getObservedProperties().forEach(element -> {
+//                    producerVariableNames.add(element.getName());
+//                });
+//                variableNameAndId.setProducerVariableNames(producerVariableNames);
+//            }
+//
+//            variableNameAndIds.add(variableNameAndId);
         });
 
         popupContent.setVariableNameAndIds(variableNameAndIds);

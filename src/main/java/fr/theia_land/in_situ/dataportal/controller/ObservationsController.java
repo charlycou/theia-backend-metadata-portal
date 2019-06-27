@@ -5,6 +5,7 @@
  */
 package fr.theia_land.in_situ.dataportal.controller;
 
+import fr.theia_land.in_situ.dataportal.DAO.CustomObservationDocumentLiteRepositoryImpl;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentRepository;
@@ -92,7 +93,8 @@ public class ObservationsController {
     @PostMapping("/changeObservationsPage")
     public Page<ObservationDocumentLite> getObservationsPage(@RequestBody String payload) {
         JSONObject jsonPayload = new JSONObject(payload);
-        return this.observationDocumentLiteRepository.getObservationsPage(jsonPayload.getJSONObject("filters").toString(),
+        return this.observationDocumentLiteRepository.getObservationsPage(CustomObservationDocumentLiteRepositoryImpl
+                .setMatchOperationUsingFilters(jsonPayload.getJSONObject("filters").toString()),
                 PageRequest.of(jsonPayload.getInt("pageSelected")-1,
                          jsonPayload.getInt("pageSize")));
     }

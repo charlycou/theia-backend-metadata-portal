@@ -6,7 +6,6 @@
 package fr.theia_land.in_situ.dataportal.model;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.SamplingFeature;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,16 +14,16 @@ import java.util.List;
  */
 public class MapItem {
 
-    private List<List<String>> documentIds;
+    private List<String> observationIds;
     private String producerId;
     private SamplingFeature samplingFeature;
 
-    public List<List<String>> getDocumentIds() {
-        return documentIds;
+    public List<String> getObservationIds() {
+        return observationIds;
     }
 
-    public void setDocumentIds(List<List<String>> documentIds) {
-        this.documentIds = documentIds;
+    public void setObservationIds(List<String> observationIds) {
+        this.observationIds = observationIds;
     }
 
     public String getProducerId() {

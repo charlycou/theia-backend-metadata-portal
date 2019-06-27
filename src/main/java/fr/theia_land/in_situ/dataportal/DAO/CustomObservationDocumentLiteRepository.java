@@ -9,9 +9,11 @@ import fr.theia_land.in_situ.dataportal.model.ObservationDocumentLite;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
 import fr.theia_land.in_situ.dataportal.model.ResponseDocument;
+import java.util.List;
 import org.springframework.data.domain.Page;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 
 /**
  * Interface for custom method definition
@@ -20,7 +22,7 @@ public interface CustomObservationDocumentLiteRepository {
 
     public ResponseDocument searchObservations(String query);
 
-    public Page<ObservationDocumentLite> getObservationsPage(String queryElements, Pageable pageable);
+    public Page<ObservationDocumentLite> getObservationsPage(List<AggregationOperation> aggregationOperations, Pageable pageable);
 
     public FacetClassification initFacets();
 
