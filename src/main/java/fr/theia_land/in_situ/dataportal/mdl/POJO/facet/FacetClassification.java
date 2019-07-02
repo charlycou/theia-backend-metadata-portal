@@ -68,6 +68,4 @@ public class FacetClassification {
     public void setTotalCount(List<ElementaryCount> totalCount) {
         this.totalCount = totalCount;
     }
-    
-    
 }

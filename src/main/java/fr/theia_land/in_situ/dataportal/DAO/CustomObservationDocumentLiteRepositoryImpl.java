@@ -43,6 +43,7 @@ import static org.springframework.data.mongodb.core.aggregation.ComparisonOperat
 import org.springframework.data.mongodb.core.aggregation.FacetOperation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.aggregation.SetOperators;
 import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
 import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -235,17 +236,28 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         }
 
         /**
-         * Match operation for the temporal extent parameters Document will not be returned only if the temporal extent
-         * queried is outside the temporal extent of the document
+         * -------------------------------------------------------------------------------------------------------------
+         * Match operation at the observation level. In "observationsLite" collection observation level is grouped by
+         * variable at a given location. Hence it is needed to unwind the "observations" fields before to perform the
+         * match operation and to group the documents back to the initial form after the match operation on
+         * "observations" level
+         */
+        /**
+         * 1 - unwind stage Need to unwind "observations" array fields of ObservationsLite collection before to perform
+         * the Match operation using the defined temporal extents. This allow to filter grouped observation that does
+         * not match the defined temporal extents
+         */
+        UnwindOperation u1 = unwind("observations");
+        aggregationOperations.add(u1);
+
+        /**
+         * 2 - MatchOperations stage Match operation for the temporal extent parameters Document will not be returned
+         * only if the temporal extent queried is outside the temporal extent of the document
+         */
+        /**
+         * 2 - a ) Temporal extent match operation
          */
         if (jsonQueryElement.getJSONArray("temporalExtents").length() > 0) {
-
-            /**
-             * Need to unwind "observations" array fields of ObservationsLite collection before to perform the Match
-             * operation using the defined temporal extents. This allow to filter grouped observation that does not
-             * match the defined temporal extents
-             */
-            UnwindOperation u1 = unwind("observations");
 
             List<Criteria> temporalExtentCriterias = new ArrayList<>();
             jsonQueryElement.getJSONArray("temporalExtents").forEach(item -> {
@@ -290,19 +302,46 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                 );
             });
 
-            /**
-             * GroupOperation to return the document according to the initial form (before unwind of "observations")
-             */
-            GroupOperation g1 = group("_id")
-                    .push("observations").as("observations")
-                    .first("producer").as("producer")
-                    .first("dataset").as("dataset");
-
-            aggregationOperations.add(u1);
             aggregationOperations.add(Aggregation.match(new Criteria().orOperator(temporalExtentCriterias.toArray(new Criteria[temporalExtentCriterias.size()]))));
-            aggregationOperations.add(g1);
+
         }
 
+        /**
+         * 2 - b ) Theia categories match operation
+         */
+        if (jsonQueryElement.getJSONArray("theiaCategories").length() > 0) {
+
+            List<Criteria> theiaCategoriesCriterias = new ArrayList<>();
+            jsonQueryElement.getJSONArray("theiaCategories").forEach(item -> {
+                String tmpCategory = (String) item;
+                theiaCategoriesCriterias.add(
+                        Criteria.where("observations.observedProperty.theiaCategories").elemMatch(new Criteria().is(item))
+                );
+            });
+            aggregationOperations.add(Aggregation.match(new Criteria().orOperator(theiaCategoriesCriterias.toArray(new Criteria[theiaCategoriesCriterias.size()]))));
+        }
+
+        
+        /**
+         * 2 - c ) Theia variable match operations
+         */
+        if (jsonQueryElement.getJSONArray("theiaVariables").length() > 0) {
+
+            List<Criteria> theiaVariableCriterias = new ArrayList<>();
+            jsonQueryElement.getJSONArray("theiaVariables").forEach(item -> {
+                String tmpVariable = (String) item;
+
+                theiaVariableCriterias.add(
+                        Criteria.where("observations.observedProperty.theiaVariable.uri").is(item)
+                );
+            });
+            aggregationOperations.add(Aggregation.match(new Criteria().orOperator(theiaVariableCriterias.toArray(new Criteria[theiaVariableCriterias.size()]))));
+        }
+        
+        
+        /**
+         * 2 - d ) observation spatial extent match operations
+         */
         if (!jsonQueryElement.isNull("spatialExtent")) {
             List<Criteria> spatialExtentCriterias = new ArrayList<>();
             JSONArray features = jsonQueryElement.getJSONObject("spatialExtent").getJSONArray("features");
@@ -314,11 +353,23 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                     points.add(new Point(point.getDouble(0), point.getDouble(1)));
                 });
                 spatialExtentCriterias.add(
-                        Criteria.where("observation.featureOfInterest.samplingFeature.geometry").within(new GeoJsonPolygon(points)));
+                        Criteria.where("observations.featureOfInterest.samplingFeature.geometry").within(new GeoJsonPolygon(points)));
             });
             aggregationOperations.add(Aggregation.match(new Criteria().orOperator(spatialExtentCriterias.toArray(new Criteria[spatialExtentCriterias.size()]))));
         }
-
+        /**
+         * 3 - Group Operation stage GroupOperation to return the document according to the initial form (before unwind
+         * of "observations")
+         */
+        GroupOperation g1 = group("_id")
+                .push("observations").as("observations")
+                .first("producer").as("producer")
+                .first("dataset").as("dataset");
+        aggregationOperations.add(g1);
+        
+        /**
+         * Match operation at the dataset or producer level
+         */
         /**
          * Match operation for each bucket element query parameters
          */
