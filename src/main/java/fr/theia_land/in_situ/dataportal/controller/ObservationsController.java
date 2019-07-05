@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentRepository;
 import fr.theia_land.in_situ.dataportal.model.ObservationDocument;
 import fr.theia_land.in_situ.dataportal.model.ObservationDocumentLite;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.ResponseDocument;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentLiteRepository;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -77,7 +77,7 @@ public class ObservationsController {
 
     /**
      * Method used to initialise the facet using the entier database
-     * @return FacetClassification object
+     * @return FacetClassificationTmp object
      */
     @PostMapping("/initFacets")
     public FacetClassification initFacets() {

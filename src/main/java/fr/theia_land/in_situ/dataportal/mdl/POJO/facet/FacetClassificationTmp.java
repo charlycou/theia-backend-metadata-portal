@@ -5,17 +5,17 @@
  */
 package fr.theia_land.in_situ.dataportal.mdl.POJO.facet;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
 import java.util.List;
 
 /**
- *
+ * Result object of the Facet Operation of the database. The class is a temporary class "tmp" because "theiaCategorieFacetElements"
+ * attribute is not optimised to be returned to the frontend client. This attribute needs to be post-processed by the backend
+ * before to be returned to the front end client.
  * @author coussotc
  */
-public class FacetClassification {
+public class FacetClassificationTmp {
 
-    private List<TheiaVariable> theiaVariables;
-    private List<TheiaCategoryTree> theiaCategoryTree;
+    private List<TheiaCategoryFacetElement> theiaCategorieFacetElements;
     private List<FundingsCount> fundingNamesFacet;
     private List<FundingsCount> fundingAcronymsFacet;
     private List<ElementaryCount> climatesFacet;
@@ -23,35 +23,14 @@ public class FacetClassification {
     private List<ElementaryCount> producerNamesFacet;
     private List<ElementaryCount> totalCount;
 
-    public FacetClassification(List<TheiaVariable> theiaVariables, List<TheiaCategoryTree> theiaCategoryTree, List<FundingsCount> fundingNamesFacet, List<FundingsCount> fundingAcronymsFacet, List<ElementaryCount> climatesFacet, List<ElementaryCount> geologiesFacet, List<ElementaryCount> producerNamesFacet, List<ElementaryCount> totalCount) {
-        this.theiaVariables = theiaVariables;
-        this.theiaCategoryTree = theiaCategoryTree;
-        this.fundingNamesFacet = fundingNamesFacet;
-        this.fundingAcronymsFacet = fundingAcronymsFacet;
-        this.climatesFacet = climatesFacet;
-        this.geologiesFacet = geologiesFacet;
-        this.producerNamesFacet = producerNamesFacet;
-        this.totalCount = totalCount;
+    public List<TheiaCategoryFacetElement> getTheiaCategorieFacetElements() {
+        return theiaCategorieFacetElements;
     }
 
-    public List<TheiaVariable> getTheiaVariables() {
-        return theiaVariables;
+    public void setTheiaCategorieFacetElements(List<TheiaCategoryFacetElement> theiaCategorieFacetElements) {
+        this.theiaCategorieFacetElements = theiaCategorieFacetElements;
     }
 
-    public void setTheiaVariables(List<TheiaVariable> theiaVariables) {
-        this.theiaVariables = theiaVariables;
-    }
-
-    public List<TheiaCategoryTree> getTheiaCategoryTree() {
-        return theiaCategoryTree;
-    }
-
-    public void setTheiaCategoryTree(List<TheiaCategoryTree> theiaCategoryTree) {
-        this.theiaCategoryTree = theiaCategoryTree;
-    }
-
-
-    
     public List<FundingsCount> getFundingNamesFacet() {
         return fundingNamesFacet;
     }
@@ -99,6 +78,4 @@ public class FacetClassification {
     public void setTotalCount(List<ElementaryCount> totalCount) {
         this.totalCount = totalCount;
     }
-    
-    
 }

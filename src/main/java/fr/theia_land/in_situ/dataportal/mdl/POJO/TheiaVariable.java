@@ -6,6 +6,8 @@
 package fr.theia_land.in_situ.dataportal.mdl.POJO;
 
 import java.util.List;
+import java.util.Objects;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  *
@@ -30,6 +32,27 @@ public class TheiaVariable {
     public void setPrefLabel(List<I18n> prefLabel) {
         this.prefLabel = prefLabel;
     }
-    
-    
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(this.uri).toHashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TheiaVariable other = (TheiaVariable) obj;
+        if (!Objects.equals(this.uri, other.uri)) {
+            return false;
+        }
+        return true;
+    }  
 }

@@ -6,9 +6,13 @@
 package fr.theia_land.in_situ.dataportal.DAO;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.MapItem;
 import fr.theia_land.in_situ.dataportal.model.ObservationDocumentLite;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassificationTmp;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryTree;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryFacetElement;
 import fr.theia_land.in_situ.dataportal.model.PopupDocument;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
 import fr.theia_land.in_situ.dataportal.model.ResponseDocument;
@@ -43,7 +47,6 @@ import static org.springframework.data.mongodb.core.aggregation.ComparisonOperat
 import org.springframework.data.mongodb.core.aggregation.FacetOperation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
-import org.springframework.data.mongodb.core.aggregation.SetOperators;
 import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
 import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -65,12 +68,33 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     /**
      * Facet aggregation operation that is used to create the facet of the application
      */
-    FacetOperation facetOperation = facet(
-            unwind("producer.fundings"),
-            project().and("producer.fundings.type").as("type").and("producer.fundings.acronym").as("name"),
-            group("name", "type").count().as("count"),
-            project("count").and("_id.name").as("name").and("_id.type").as("type").andExclude("_id")
-    ).as("fundingAcronymsFacet")
+    FacetOperation facetOperation = facet()
+            .and(
+                    unwind("observations"),
+                    Aggregation.graphLookup("variableCategories")
+                            .startWith("observations.observedProperty.theiaCategories")
+                            .connectFrom("broaders")
+                            .connectTo("uri")
+                            .as("categoryHierarchy"),
+                    project("categoryHierarchy").and("observations.observedProperty.theiaVariable").as("theiaVariable"),
+                    unwind("categoryHierarchy"),
+                    group("categoryHierarchy")
+                            .count().as("count")
+                            .push("theiaVariable").as("theiaVariables"),
+                    project().and("_id.uri").as("uri")
+                            .and("_id.broaders").as("broaders")
+                            .and("_id.narrowers").as("narrowers")
+                            .and("_id.prefLabel").as("prefLabel")
+                            .and("count").as("count")
+                            .and("theiaVariables").as("theiaVariables")
+            )
+            .as("theiaCategorieFacetElements")
+            .and(
+                    unwind("producer.fundings"),
+                    project().and("producer.fundings.type").as("type").and("producer.fundings.acronym").as("name"),
+                    group("name", "type").count().as("count"),
+                    project("count").and("_id.name").as("name").and("_id.type").as("type").andExclude("_id")
+            ).as("fundingAcronymsFacet")
             .and(unwind("producer.fundings"),
                     project().and("producer.fundings.type").as("type")
                             .and(filter("producer.fundings.name").as("item")
@@ -164,32 +188,109 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             item.setObservationIds(new ArrayList<>(observationIdsFromMapItems));
         });
         responseDocument.setMapItems(mapItems);
+        responseDocument.setFacetClassification(setFacetClassification(facetOperation, aggregationOperations));
+//        responseDocument.setFacetClassification(mongoTemplate.aggregate(
+//                Aggregation.newAggregation(aggregationOperations).withOptions(options), "observationsLite", FacetClassificationTmp.class)
+//                .getMappedResults());
+        return responseDocument;
+    }
+
+    private FacetClassification setFacetClassification(FacetOperation facetOperation, List<AggregationOperation> aggregationOperations) {
         /**
          * Add the Facet aggregation operation to the pipeline to generate the relative facet. The following result is
          * stored into the ResponseDocument object
          */
         aggregationOperations.add(facetOperation);
-        responseDocument.setFacetClassification(mongoTemplate.aggregate(
-                Aggregation.newAggregation(aggregationOperations).withOptions(options), "observationsLite", FacetClassification.class)
-                .getMappedResults());
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        FacetClassificationTmp facetClassificationTmp = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations).withOptions(options), "observationsLite", FacetClassificationTmp.class)
+                .getUniqueMappedResult();
 
-        return responseDocument;
+        /**
+         * Post-processing of the FacetClassificationTmp class before returning to the front end client.
+         */
+        /**
+         * 1 - Build the category tree
+         * 2 - Build the collection of Theia Variable
+         */
+        List<TheiaCategoryTree> categoryTrees = new ArrayList<>();
+        Set<TheiaVariable> theiaVariables = new HashSet<>();
+        facetClassificationTmp.getTheiaCategorieFacetElements().stream().filter((t) -> {
+            return t.getBroaders().contains("https://w3id.org/ozcar-theia/variableCategories"); //To change body of generated lambdas, choose Tools | Templates.
+        }).forEach((t) -> {
+            /**
+             * Recursivly build the category tree
+             */
+            categoryTrees.add(TheiaCategoryTree.withNarrowers(t.getUri(), t.getPrefLabel(), populateNarrowers(t.getNarrowers(), facetClassificationTmp.getTheiaCategorieFacetElements()), t.getCount()));
+            /**
+             * Build the list of Theia variable
+             */
+            theiaVariables.addAll(t.getTheiaVariables());
+        });
+        
+        return new FacetClassification(
+                new ArrayList(theiaVariables),
+                categoryTrees,
+                facetClassificationTmp.getFundingNamesFacet(),
+                facetClassificationTmp.getFundingAcronymsFacet(),
+                facetClassificationTmp.getClimatesFacet(),
+                facetClassificationTmp.getGeologiesFacet(),
+                facetClassificationTmp.getProducerNamesFacet(),
+                facetClassificationTmp.getTotalCount());
+    }
+
+    private Set<TheiaCategoryTree> populateNarrowers(List<String> uriNarrowers, List<TheiaCategoryFacetElement> facetElements) {
+        //List to return
+        Set<TheiaCategoryTree> narrowers = new HashSet<>();
+
+        //For each uri of the list uriNarrowers, a new TheiaCategoryTree object is added to the narrowers list.
+        uriNarrowers.forEach(uri -> {
+            TheiaCategoryFacetElement facetElement = facetElements.stream().filter((t) -> {
+                return t.getUri().equals(uri);
+            }).findFirst().orElse(null);
+
+            //If the narrowers uri is not present in the facetElements collection, nothing happens
+            if (facetElement != null) {
+
+                //The limit case: the FacetElement object found does not have narrowers attribute
+                if (facetElement.getNarrowers() == null) {
+                    narrowers.add(TheiaCategoryTree.withTheiaVariables(
+                            facetElement.getUri(),
+                            facetElement.getPrefLabel(),
+                            new HashSet(facetElement.getTheiaVariables()),
+                            facetElement.getCount()));
+                } //The recursive case: the FacetElement object found does have narrowers attribute, populateNarrowers methods
+                // is recursivly used
+                else {
+                    if (facetElement.getNarrowers().size() > 0) {
+                        narrowers.add(TheiaCategoryTree.withNarrowers(
+                                facetElement.getUri(),
+                                facetElement.getPrefLabel(),
+                                populateNarrowers(facetElement.getNarrowers(), facetElements),
+                                facetElement.getCount()));
+                    }
+                }
+            }
+        });
+        return narrowers;
     }
 
     /**
      * Method to calculate the facet from the whole database
      *
-     * @return FacetClassification object containing the facet element to be printed on UI
+     * @return FacetClassificationTmp object containing the facet element to be printed on UI
      */
     @Override
+//    public FacetClassificationTmp initFacets() {
+//        List<AggregationOperation> aggregationOperations = new ArrayList<>();
+//        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+//        aggregationOperations.add(facetOperation);
+//        FacetClassificationTmp facet = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations).withOptions(options), "observationsLite", FacetClassificationTmp.class)
+//                .getUniqueMappedResult();
+//        return facet;
+//    }
     public FacetClassification initFacets() {
         List<AggregationOperation> aggregationOperations = new ArrayList<>();
-        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
-        aggregationOperations.add(facetOperation);
-        FacetClassification facet = mongoTemplate.aggregate(
-                Aggregation.newAggregation(aggregationOperations).withOptions(options), "observationsLite", FacetClassification.class)
-                .getUniqueMappedResult();
-        return facet;
+        return setFacetClassification(facetOperation, aggregationOperations);
     }
 
     /**
@@ -315,13 +416,13 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             jsonQueryElement.getJSONArray("theiaCategories").forEach(item -> {
                 String tmpCategory = (String) item;
                 theiaCategoriesCriterias.add(
-                        Criteria.where("observations.observedProperty.theiaCategories").elemMatch(new Criteria().is(item))
+//                        Criteria.where("observations.observedProperty.theiaCategories").elemMatch(new Criteria().is(item))
+                        Criteria.where("observations.observedProperty.theiaCategories").is(item)
                 );
             });
             aggregationOperations.add(Aggregation.match(new Criteria().orOperator(theiaCategoriesCriterias.toArray(new Criteria[theiaCategoriesCriterias.size()]))));
         }
 
-        
         /**
          * 2 - c ) Theia variable match operations
          */
@@ -337,8 +438,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             });
             aggregationOperations.add(Aggregation.match(new Criteria().orOperator(theiaVariableCriterias.toArray(new Criteria[theiaVariableCriterias.size()]))));
         }
-        
-        
+
         /**
          * 2 - d ) observation spatial extent match operations
          */
@@ -366,7 +466,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                 .first("producer").as("producer")
                 .first("dataset").as("dataset");
         aggregationOperations.add(g1);
-        
+
         /**
          * Match operation at the dataset or producer level
          */

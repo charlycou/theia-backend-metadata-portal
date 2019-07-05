@@ -6,6 +6,7 @@
 package fr.theia_land.in_situ.dataportal.model;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassificationTmp;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
@@ -16,7 +17,7 @@ import org.springframework.data.domain.Page;
 public class ResponseDocument {
 //    private PagedListHolder<ObservationDocumentLite> observationDocumentLitePage;
     private Page<ObservationDocumentLite> observationDocumentLitePage;
-    private List<FacetClassification> facetClassification;
+    private FacetClassification facetClassification;
     private List<MapItem> mapItems;
 
     public Page<ObservationDocumentLite> getObservationDocumentLitePage() {
@@ -34,15 +35,15 @@ public class ResponseDocument {
     public void setMapItems(List<MapItem> mapItems) {
         this.mapItems = mapItems;
     }
-    
 
-
-
-    public List<FacetClassification> getFacetClassification() {
+    public FacetClassification getFacetClassification() {
         return facetClassification;
     }
 
-    public void setFacetClassification(List<FacetClassification> facetClassification) {
+    public void setFacetClassification(FacetClassification facetClassification) {
         this.facetClassification = facetClassification;
     }
+
+    
+
 }
