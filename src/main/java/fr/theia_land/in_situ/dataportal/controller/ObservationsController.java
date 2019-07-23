@@ -21,11 +21,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentLiteRepository;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  *
@@ -43,18 +43,14 @@ public class ObservationsController {
     private ObservationDocumentLiteRepository observationDocumentLiteRepository;
     @Autowired
     private ObservationDocumentRepository observationDocumentRepository;
-    
-    @GetMapping("/test")
-    public String test() {
-        return "coucou";
-    }
+   
 
     /**
      * method used to show detailed information about observations
      * @param payload String that can be parsed into json array containing the id of the observations to be printed
      * @return observationDocuments object
      */
-    @PostMapping("/showObservationsDetail")
+    @PostMapping("/showObservationsDetailed")
     public List<ObservationDocument> findByDocumentId(@RequestBody String payload) {
         List<ObservationDocument> observationDocuments = new ArrayList<>();
         JSONArray jsonDocumentIds = new JSONArray(payload);
@@ -62,6 +58,16 @@ public class ObservationsController {
             observationDocuments.add(this.observationDocumentRepository.findByDocumentId((String) item));
         });
         return observationDocuments;
+    }
+    
+    @PostMapping("/getVariablesAtOneLocation")
+    public List<TheiaVariable> getVariablesAtOneLocation(@RequestBody  String payload) {
+        return this.observationDocumentLiteRepository.getVariablesAtOneLocation(payload);
+    }
+    
+    @PostMapping("/getVariablesOfADataset")
+    public List<TheiaVariable> getVariablesOfADataset(@RequestBody  String payload) {
+        return this.observationDocumentLiteRepository.getVariablesOfADataset(payload);
     }
     
     /**

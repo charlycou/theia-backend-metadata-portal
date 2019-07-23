@@ -18,8 +18,10 @@ import fr.theia_land.in_situ.dataportal.model.PopupContent;
 import fr.theia_land.in_situ.dataportal.model.ResponseDocument;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.bson.Document;
 import org.json.JSONArray;
@@ -29,6 +31,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Box;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -46,7 +49,9 @@ import static org.springframework.data.mongodb.core.aggregation.ArrayOperators.F
 import static org.springframework.data.mongodb.core.aggregation.ComparisonOperators.Eq.valueOf;
 import org.springframework.data.mongodb.core.aggregation.FacetOperation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
+import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
+import org.springframework.data.mongodb.core.aggregation.ReplaceRootOperation;
 import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
 import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -209,8 +214,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
          * Post-processing of the FacetClassificationTmp class before returning to the front end client.
          */
         /**
-         * 1 - Build the category tree
-         * 2 - Build the collection of Theia Variable
+         * 1 - Build the category tree 2 - Build the collection of Theia Variable
          */
         List<TheiaCategoryTree> categoryTrees = new ArrayList<>();
         Set<TheiaVariable> theiaVariables = new HashSet<>();
@@ -226,7 +230,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
              */
             theiaVariables.addAll(t.getTheiaVariables());
         });
-        
+
         return new FacetClassification(
                 new ArrayList(theiaVariables),
                 categoryTrees,
@@ -416,7 +420,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             jsonQueryElement.getJSONArray("theiaCategories").forEach(item -> {
                 String tmpCategory = (String) item;
                 theiaCategoriesCriterias.add(
-//                        Criteria.where("observations.observedProperty.theiaCategories").elemMatch(new Criteria().is(item))
+                        //                        Criteria.where("observations.observedProperty.theiaCategories").elemMatch(new Criteria().is(item))
                         Criteria.where("observations.observedProperty.theiaCategories").is(item)
                 );
             });
@@ -579,4 +583,68 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         return popupContent;
     }
 
+    /**
+     * Get all the variables measured at the location of a station. The location can either be a point or a bbox.
+     *
+     * @param
+     * @return
+     */
+    @Override
+    public List<TheiaVariable> getVariablesAtOneLocation(String coordinatesString) {
+        JSONArray coordinates = new JSONArray(coordinatesString);
+        List<Number[]> latLngs = new ArrayList<>();
+
+        getPointRecursivly(coordinates, latLngs);
+
+        List<Double> lat = new ArrayList<>();
+        List<Double> lon = new ArrayList<>();
+//        List<Double> alt = new ArrayList<>();
+
+        latLngs.forEach(item -> {
+            lon.add(item[0].doubleValue());
+            lat.add(item[1].doubleValue());
+        });
+        Double minLong = lon.stream().min(Comparator.comparing(Double::valueOf)).get();
+        Double maxLong = lon.stream().max(Comparator.comparing(Double::valueOf)).get();
+        Double minLat = lat.stream().min(Comparator.comparing(Double::valueOf)).get();
+        Double maxLat = lat.stream().max(Comparator.comparing(Double::valueOf)).get();
+
+        MatchOperation m1;
+        Criteria andCriteria = new Criteria();
+        if (Objects.equals(minLong, maxLong) && Objects.equals(minLat, maxLat)) {
+            Point bottomLeft = new Point(minLong, minLat);
+            Point upperRight = new Point(maxLong, maxLat);
+            andCriteria.andOperator(Criteria.where("observations.0.observedProperty.theiaVariable").exists(true), Criteria.where("observations.0.featureOfInterest.samplingFeature.geometry").within(new Box(bottomLeft, upperRight)));
+            m1 = Aggregation.match(andCriteria);
+        } else {
+            andCriteria.andOperator(Criteria.where("observations.0.observedProperty.theiaVariable").exists(true), Criteria.where("observations.0.featureOfInterest.samplingFeature.geometry").is(new Point(minLong, minLat)));
+            m1 = Aggregation.match(andCriteria);
+        }
+        ProjectionOperation p1 = Aggregation.project().and("observations.observedProperty.theiaVariable").as("theiaVariable");
+        ReplaceRootOperation rp1 = Aggregation.replaceRoot().withValueOf(ArrayOperators.ArrayElemAt.arrayOf("theiaVariable").elementAt(0));
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, rp1), "observationsLite", TheiaVariable.class).getMappedResults();
+    }
+
+    @Override
+    public List<TheiaVariable> getVariablesOfADataset(String datasetId) {
+        Criteria andCriteria = new Criteria();
+        andCriteria.andOperator(Criteria.where("observations.0.observedProperty.theiaVariable").exists(true), Criteria.where("dataset.datasetId").is(datasetId));
+        MatchOperation m1 = Aggregation.match(andCriteria);
+        ProjectionOperation p1 = Aggregation.project().and("observations.observedProperty.theiaVariable").as("theiaVariable");
+        ReplaceRootOperation rp1 = Aggregation.replaceRoot().withValueOf(ArrayOperators.ArrayElemAt.arrayOf("theiaVariable").elementAt(0));
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, rp1), "observationsLite", TheiaVariable.class).getMappedResults();
+        
+    }
+
+    private void getPointRecursivly(JSONArray coordinates, List<Number[]> latLngs) {
+        for (int i = 0; i < coordinates.length(); i++) {
+            if (coordinates.optJSONArray(i) != null) {
+                getPointRecursivly(coordinates.optJSONArray(i), latLngs);
+            } else {
+                List<Number> intList = (List<Number>) (List<?>) coordinates.toList();
+                Number[] intArray = new Number[intList.size()];
+                latLngs.add(intList.toArray(intArray));
+            }
+        }
+    }
 }
