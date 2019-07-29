@@ -626,14 +626,58 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     }
 
     @Override
-    public List<TheiaVariable> getVariablesOfADataset(String datasetId) {
+    public List<Document> getObservationsOfADataset(String datasetId) {
         Criteria andCriteria = new Criteria();
         andCriteria.andOperator(Criteria.where("observations.0.observedProperty.theiaVariable").exists(true), Criteria.where("dataset.datasetId").is(datasetId));
         MatchOperation m1 = Aggregation.match(andCriteria);
-        ProjectionOperation p1 = Aggregation.project().and("observations.observedProperty.theiaVariable").as("theiaVariable");
-        ReplaceRootOperation rp1 = Aggregation.replaceRoot().withValueOf(ArrayOperators.ArrayElemAt.arrayOf("theiaVariable").elementAt(0));
-        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, rp1), "observationsLite", TheiaVariable.class).getMappedResults();
+        ProjectionOperation p1 = Aggregation.project().and("observations").as("observations");
+        //ReplaceRootOperation rp1 = Aggregation.replaceRoot().withValueOf("observations");
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1), "observationsLite", Document.class).getMappedResults();
+    }
+    
+//    @Override
+//    public List<MapItem> getMapItemsOfADataset(String datasetId) {
+//        return mongoTemplate.find(Query.query(Criteria.where("datasetId").is(datasetId)),MapItem.class, "mapItems");
+//    }
+//    
+    @Override
+    public List<String> getObservationIdsOfOtherTheiaVariableAtLocation(String queryFilter) {
+        JSONObject queryFilterJson = new JSONObject(queryFilter);
+        List<Number[]> latLngs = new ArrayList<>();
+
+        getPointRecursivly(queryFilterJson.getJSONArray("coordinates"), latLngs);
+
+        List<Double> lat = new ArrayList<>();
+        List<Double> lon = new ArrayList<>();
+//        List<Double> alt = new ArrayList<>();
+
+        latLngs.forEach(item -> {
+            lon.add(item[0].doubleValue());
+            lat.add(item[1].doubleValue());
+        });
+        Double minLong = lon.stream().min(Comparator.comparing(Double::valueOf)).get();
+        Double maxLong = lon.stream().max(Comparator.comparing(Double::valueOf)).get();
+        Double minLat = lat.stream().min(Comparator.comparing(Double::valueOf)).get();
+        Double maxLat = lat.stream().max(Comparator.comparing(Double::valueOf)).get();
         
+         MatchOperation m1;
+        Criteria andCriteria = new Criteria();
+        if (Objects.equals(minLong, maxLong) && Objects.equals(minLat, maxLat)) {
+            Point bottomLeft = new Point(minLong, minLat);
+            Point upperRight = new Point(maxLong, maxLat);
+            andCriteria.andOperator(Criteria.where("observations.0.observedProperty.theiaVariable.uri").is(queryFilterJson.getString("uri")),
+                    Criteria.where("observations.0.featureOfInterest.samplingFeature.geometry").within(new Box(bottomLeft, upperRight)));
+            m1 = Aggregation.match(andCriteria);
+        } else {
+            andCriteria.andOperator(Criteria.where("observations.0.observedProperty.theiaVariable.uri").is(queryFilterJson.getString("uri")),
+                    Criteria.where("observations.0.featureOfInterest.samplingFeature.geometry").is(new Point(minLong, minLat)));
+            m1 = Aggregation.match(andCriteria);
+        }
+        UnwindOperation u1 = Aggregation.unwind("observations");
+        GroupOperation g1 = Aggregation.group().push("observations.observationId").as("observationId");
+        ProjectionOperation p1 = Aggregation.project("observationId").andExclude("_id");
+        Document doc = mongoTemplate.aggregate(Aggregation.newAggregation(m1, u1, g1, p1), "observationsLite", Document.class).getUniqueMappedResult();
+        return doc.get("observationId", List.class);
     }
 
     private void getPointRecursivly(JSONArray coordinates, List<Number[]> latLngs) {

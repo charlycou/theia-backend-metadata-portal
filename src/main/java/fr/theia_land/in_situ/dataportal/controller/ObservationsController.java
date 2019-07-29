@@ -6,6 +6,7 @@
 package fr.theia_land.in_situ.dataportal.controller;
 
 import fr.theia_land.in_situ.dataportal.DAO.CustomObservationDocumentLiteRepositoryImpl;
+import fr.theia_land.in_situ.dataportal.DAO.MapItemRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentRepository;
@@ -23,9 +24,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentLiteRepository;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
+import fr.theia_land.in_situ.dataportal.model.MapItem;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  *
@@ -43,6 +48,8 @@ public class ObservationsController {
     private ObservationDocumentLiteRepository observationDocumentLiteRepository;
     @Autowired
     private ObservationDocumentRepository observationDocumentRepository;
+    @Autowired
+    private MapItemRepository mapItemRepository;
    
 
     /**
@@ -60,14 +67,25 @@ public class ObservationsController {
         return observationDocuments;
     }
     
+    @PostMapping("/getObservationIdsOfOtherTheiaVariableAtLocation")
+    public List<String> getObservationIdsOfOtherTheiaVariableAtLocation(@RequestBody String payload) {
+        return this.observationDocumentLiteRepository.getObservationIdsOfOtherTheiaVariableAtLocation(payload);
+    }
+    
+    
     @PostMapping("/getVariablesAtOneLocation")
     public List<TheiaVariable> getVariablesAtOneLocation(@RequestBody  String payload) {
         return this.observationDocumentLiteRepository.getVariablesAtOneLocation(payload);
     }
     
-    @PostMapping("/getVariablesOfADataset")
-    public List<TheiaVariable> getVariablesOfADataset(@RequestBody  String payload) {
-        return this.observationDocumentLiteRepository.getVariablesOfADataset(payload);
+    @PostMapping("/getObservationsOfADataset")
+    public List<Document> getObservationsOfADataset(@RequestBody  String payload) {
+        return this.observationDocumentLiteRepository.getObservationsOfADataset(payload);
+    }
+    
+    @GetMapping("/getMapItemsOfADataset/{datasetId}")
+    public List<MapItem> getMapItemsOfADataset(@PathVariable String datasetId) {
+        return this.mapItemRepository.findByDatasetId(datasetId);
     }
     
     /**

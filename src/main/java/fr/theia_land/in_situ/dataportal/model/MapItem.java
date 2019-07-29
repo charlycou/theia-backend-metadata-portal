@@ -7,15 +7,18 @@ package fr.theia_land.in_situ.dataportal.model;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.SamplingFeature;
 import java.util.List;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  *
  * @author coussotc
  */
+@Document(collection = "mapItems")
 public class MapItem {
 
     private List<String> observationIds;
     private String producerId;
+    private String datasetId;
     private SamplingFeature samplingFeature;
 
     public List<String> getObservationIds() {
@@ -33,6 +36,15 @@ public class MapItem {
     public void setProducerId(String producerId) {
         this.producerId = producerId;
     }
+
+    public String getDatasetId() {
+        return datasetId;
+    }
+
+    public void setDatasetId(String datasetId) {
+        this.datasetId = datasetId;
+    }
+    
 
     public SamplingFeature getSamplingFeature() {
         return samplingFeature;

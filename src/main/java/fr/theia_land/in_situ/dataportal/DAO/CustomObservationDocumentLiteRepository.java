@@ -7,6 +7,7 @@ package fr.theia_land.in_situ.dataportal.DAO;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
+import fr.theia_land.in_situ.dataportal.model.MapItem;
 import fr.theia_land.in_situ.dataportal.model.ObservationDocumentLite;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
 import fr.theia_land.in_situ.dataportal.model.ResponseDocument;
@@ -22,7 +23,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
  */
 public interface CustomObservationDocumentLiteRepository {
 
-    public ResponseDocument searchObservations(String query);
+    public ResponseDocument searchObservations(String queryFilter);
 
     public Page<ObservationDocumentLite> getObservationsPage(List<AggregationOperation> aggregationOperations, Pageable pageable);
 
@@ -32,5 +33,9 @@ public interface CustomObservationDocumentLiteRepository {
 
     public List<TheiaVariable> getVariablesAtOneLocation(String coordinatesString);
     
-    public List<TheiaVariable> getVariablesOfADataset(String coordinatesString);
+    public List<Document> getObservationsOfADataset(String coordinatesString);
+    
+    public List<String> getObservationIdsOfOtherTheiaVariableAtLocation(String queryFilter);
+    
+   // public List<MapItem> getMapItemsOfADataset(String datasetId);
 }
