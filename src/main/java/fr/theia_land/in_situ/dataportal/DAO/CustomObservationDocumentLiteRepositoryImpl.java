@@ -5,6 +5,7 @@
  */
 package fr.theia_land.in_situ.dataportal.DAO;
 
+import com.mongodb.client.model.Sorts;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
@@ -16,6 +17,7 @@ import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryFacetElement
 import fr.theia_land.in_situ.dataportal.model.PopupDocument;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
 import fr.theia_land.in_situ.dataportal.model.ResponseDocument;
+import fr.theia_land.in_situ.import_module.CustomConfig.GenericAggregationOperation;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -31,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.geo.Box;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -46,6 +49,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOptions;
 import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import static org.springframework.data.mongodb.core.aggregation.ArrayOperators.Filter.filter;
+import org.springframework.data.mongodb.core.aggregation.ComparisonOperators;
 import static org.springframework.data.mongodb.core.aggregation.ComparisonOperators.Eq.valueOf;
 import org.springframework.data.mongodb.core.aggregation.FacetOperation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
@@ -308,6 +312,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     public Page<ObservationDocumentLite> getObservationsPage(List<AggregationOperation> aggregationOperations, Pageable pageable) {
         //Add aggregationOperation to pipeline to set pagination
         List<AggregationOperation> aggregationOperationsPage = new ArrayList(aggregationOperations);
+        aggregationOperationsPage.add(Aggregation.sort(Sort.by(Sort.Order.desc("textScore"))).and(Sort.by(Sort.Order.asc("theiaVariableEn"))));
         aggregationOperationsPage.add(skip((long) pageable.getPageNumber() * pageable.getPageSize()));
         aggregationOperationsPage.add(limit(pageable.getPageSize()));
         AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
@@ -338,8 +343,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
          */
         if (!jsonQueryElement.isNull("fullText")) {
             aggregationOperations.add(match(new TextCriteria().matchingAny(jsonQueryElement.getString("fullText"))));
+            aggregationOperations.add(new GenericAggregationOperation("$addFields", "{ \"textScore\": { \"$meta\": \"textScore\" }}"));
         }
-
         /**
          * -------------------------------------------------------------------------------------------------------------
          * Match operation at the observation level. In "observationsLite" collection observation level is grouped by
@@ -354,6 +359,12 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
          */
         UnwindOperation u1 = unwind("observations");
         aggregationOperations.add(u1);
+        
+        /**
+         * Add the fileds TheiaVariableEn after the unwind operation. This field will be used to sort the result document 
+         * by alphabetical order at the end of the aggregation operation.
+         */
+        aggregationOperations.add(new GenericAggregationOperation("$addFields", "{ \"theiaVariableEn\" : { \"$filter\" : { \"input\" : \"$observations.observedProperty.theiaVariable.prefLabel\" , \"as\" : \"var\" , \"cond\" : { \"$eq\":[\"$$var.lang\", \"en\"]}}}}"));
 
         /**
          * 2 - MatchOperations stage Match operation for the temporal extent parameters Document will not be returned
@@ -468,11 +479,13 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         GroupOperation g1 = group("_id")
                 .push("observations").as("observations")
                 .first("producer").as("producer")
-                .first("dataset").as("dataset");
+                .first("dataset").as("dataset")
+                .first("textScore").as("textScore")
+                .first("theiaVariableEn").as("theiaVariableEn");
         aggregationOperations.add(g1);
 
         /**
-         * Match operation at the dataset or producer level
+         * Match operation at the dataset or producer level -------------------------------------------------
          */
         /**
          * Match operation for each bucket element query parameters
@@ -503,6 +516,18 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                     Criteria.where("acronym").elemMatch(
                             Criteria.where("lang").is("en").and("text").is(item)))));
         });
+
+        /**
+         * Sort the result by theia variable alphabetical orderfirst and then by textScore descending
+         */
+//        aggregationOperations.add(Aggregation.project().and(
+//                ArrayOperators.Filter.filter("observations.observedProperty.theiaVariable.prefLabel")
+//                        .as("item")
+//                        .by(ComparisonOperators.Eq.valueOf("item.lang").equalToValue("en")))
+//                .as("theiaVariableEn"));
+        //aggregationOperations.add(Aggregation.sort(Sort.by(Sort.Order.desc("textScore"))).and(Sort.by(Sort.Order.asc("theiaVariableEn"))));
+        //aggregationOperations.add(Aggregation.sort(Sort.by(Sort.Order.desc("textScore"))));
+
         return aggregationOperations;
     }
 
@@ -634,7 +659,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         //ReplaceRootOperation rp1 = Aggregation.replaceRoot().withValueOf("observations");
         return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1), "observationsLite", Document.class).getMappedResults();
     }
-    
+
 //    @Override
 //    public List<MapItem> getMapItemsOfADataset(String datasetId) {
 //        return mongoTemplate.find(Query.query(Criteria.where("datasetId").is(datasetId)),MapItem.class, "mapItems");
@@ -659,8 +684,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         Double maxLong = lon.stream().max(Comparator.comparing(Double::valueOf)).get();
         Double minLat = lat.stream().min(Comparator.comparing(Double::valueOf)).get();
         Double maxLat = lat.stream().max(Comparator.comparing(Double::valueOf)).get();
-        
-         MatchOperation m1;
+
+        MatchOperation m1;
         Criteria andCriteria = new Criteria();
         if (Objects.equals(minLong, maxLong) && Objects.equals(minLat, maxLat)) {
             Point bottomLeft = new Point(minLong, minLat);
