@@ -5,7 +5,6 @@
  */
 package fr.theia_land.in_situ.dataportal.DAO;
 
-import com.mongodb.client.model.Sorts;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
@@ -49,7 +48,6 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOptions;
 import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import static org.springframework.data.mongodb.core.aggregation.ArrayOperators.Filter.filter;
-import org.springframework.data.mongodb.core.aggregation.ComparisonOperators;
 import static org.springframework.data.mongodb.core.aggregation.ComparisonOperators.Eq.valueOf;
 import org.springframework.data.mongodb.core.aggregation.FacetOperation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
@@ -359,10 +357,10 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
          */
         UnwindOperation u1 = unwind("observations");
         aggregationOperations.add(u1);
-        
+
         /**
-         * Add the fileds TheiaVariableEn after the unwind operation. This field will be used to sort the result document 
-         * by alphabetical order at the end of the aggregation operation.
+         * Add the fileds TheiaVariableEn after the unwind operation. This field will be used to sort the result
+         * document by alphabetical order at the end of the aggregation operation.
          */
         aggregationOperations.add(new GenericAggregationOperation("$addFields", "{ \"theiaVariableEn\" : { \"$filter\" : { \"input\" : \"$observations.observedProperty.theiaVariable.prefLabel\" , \"as\" : \"var\" , \"cond\" : { \"$eq\":[\"$$var.lang\", \"en\"]}}}}"));
 
@@ -527,7 +525,6 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
 //                .as("theiaVariableEn"));
         //aggregationOperations.add(Aggregation.sort(Sort.by(Sort.Order.desc("textScore"))).and(Sort.by(Sort.Order.asc("theiaVariableEn"))));
         //aggregationOperations.add(Aggregation.sort(Sort.by(Sort.Order.desc("textScore"))));
-
         return aggregationOperations;
     }
 
@@ -538,12 +535,15 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
      * @return PopupContent object
      */
     @Override
-    public PopupContent loadPopupContent(String ids) {
+    public PopupContent loadPopupContent(List<String> ids) {
         //parse the string ids parameter into JSON Object
-        JSONObject jsonIds = new JSONObject(ids);
+        //JSONObject jsonIds = new JSONObject(ids);
         //Parse json of ids into Set of List of String
         Set<String> observationIdsFromMarker = new HashSet<>();
-        jsonIds.getJSONArray("ids").forEach(item1 -> {
+//        jsonIds.getJSONArray("ids").forEach(item1 -> {
+//            observationIdsFromMarker.add(item1.toString());
+//        });
+        ids.forEach(item1 -> {
             observationIdsFromMarker.add(item1.toString());
         });
         //Query the "observationsLite" collection using the newly created documentIds Set object

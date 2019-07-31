@@ -29,7 +29,7 @@ public interface CustomObservationDocumentLiteRepository {
 
     public FacetClassification initFacets();
 
-    public PopupContent loadPopupContent(String ids);
+    public PopupContent loadPopupContent(List<String> ids);
 
     public List<TheiaVariable> getVariablesAtOneLocation(String coordinatesString);
     

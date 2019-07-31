@@ -1,10 +1,7 @@
 package fr.theia_land.in_situ.dataportal;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Annotation enabling three annotations - @EnableAutoConfiguration: enable Spring Boot’s auto-configuration mechanism
@@ -13,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @Configuration: allow to register extra beans in the context or import additional configuration classes
  */
-@RestController
+
 @SpringBootApplication
 public class DataportalApplication {
 
@@ -21,9 +18,4 @@ public class DataportalApplication {
         SpringApplication.run(DataportalApplication.class, args);
     }
 
-    @GetMapping("/message")
-    String message() {
-        
-        return "Spring Boot backend!!";
-    }
 }

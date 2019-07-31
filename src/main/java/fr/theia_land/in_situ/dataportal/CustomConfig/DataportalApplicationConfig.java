@@ -5,6 +5,10 @@
  */
 package fr.theia_land.in_situ.dataportal.CustomConfig;
 
+import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.GeometryGeoJSONReadConverter;
+import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.ContactReadConverter;
+import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.SensorReadConverter;
+import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.SamplingFeatureReadConverter;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.WriteConcern;

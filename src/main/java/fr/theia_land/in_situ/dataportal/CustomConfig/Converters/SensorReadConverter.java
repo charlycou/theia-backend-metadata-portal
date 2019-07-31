@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.theia_land.in_situ.dataportal.CustomConfig;
+package fr.theia_land.in_situ.dataportal.CustomConfig.Converters;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.PhysicalSensor;
