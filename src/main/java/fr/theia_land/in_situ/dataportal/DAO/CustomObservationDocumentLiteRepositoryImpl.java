@@ -132,7 +132,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
 
     /**
      * Method used to query the database using query filters. The method query the database, generate the new facets
-     * depending on the result, return items to be printed on the map and paginated lite results.
+     * depending on the result, return items to be printed on the map and paginated on results list.
      *
      * @param queryElements String that can be parsed into json defining the query filters
      * @return ResponseDocument document containing the facet classification, the MapItems to be mapped and the
@@ -144,18 +144,21 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         ResponseDocument responseDocument = new ResponseDocument();
 
         /**
-         * Aggregation pipeline to be executed to find the observation matching the query. The result is stored as
-         * MapItem.class, that are very light weight object to be added onto the map
+         * Aggregation pipeline to be executed to find the observation matching the query in "observationsLite" collection.
          */
         List<AggregationOperation> aggregationOperations = setMatchOperationUsingFilters(queryElements);
 
         /**
-         * The aggregation pipeline is executed to obtain the list of ObservationDocument lite corresponding to the
+         * The aggregation pipeline is executed to obtain the list of ObservationLiteDocument corresponding to the
          * query. The following result is Paginated and stored into the ResponseDocument object
          */
         AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
         responseDocument.setObservationDocumentLitePage(getObservationsPage(aggregationOperations, PageRequest.of(0, 10)));
 
+        /**
+         * Add Unwind and project aggregation operation to the aggregation pipeline in order to return all the observationId
+         * matching the query
+         */
         UnwindOperation u1 = Aggregation.unwind("observations");
         ProjectionOperation p1 = Aggregation.project().and("observations.observationId").as("observationId").andExclude("_id");
         aggregationOperations.add(u1);
@@ -183,7 +186,6 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
          * field "doucmentIds" containing at least one element of the "documentIdsFromObservationLite" Set object are
          * queried.
          */
-//        List<MapItem> mapItems = mongoTemplate.find(Query.query(Criteria.where("documentIds").in(documentIdsFromObservationLite)), MapItem.class, "mapItems");
         List<MapItem> mapItems = mongoTemplate.find(Query.query(Criteria.where("observationIds").in(observationLiteIds)), MapItem.class, "mapItems");
         mapItems.forEach(item -> {
             /**
@@ -194,14 +196,21 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             observationIdsFromMapItems.retainAll(observationLiteIds);
             item.setObservationIds(new ArrayList<>(observationIdsFromMapItems));
         });
+        
+        /**
+         * Store the mapItems and the facets in the ResponseDocument
+         */
         responseDocument.setMapItems(mapItems);
-        responseDocument.setFacetClassification(setFacetClassification(facetOperation, aggregationOperations));
-//        responseDocument.setFacetClassification(mongoTemplate.aggregate(
-//                Aggregation.newAggregation(aggregationOperations).withOptions(options), "observationsLite", FacetClassificationTmp.class)
-//                .getMappedResults());
+        responseDocument.setFacetClassification(setFacetClassification(facetOperation, aggregationOperations));;
         return responseDocument;
     }
 
+    /**
+     * Calculate the facet for a given set of filters defined by user.
+     * @param facetOperation FacetOperation aggregation operation to be executed to calculate the facets
+     * @param aggregationOperations The aggregation pipeline generated for the set of filter defined by the user
+     * @return FacetClassification object corresponding to the filters 
+     */
     private FacetClassification setFacetClassification(FacetOperation facetOperation, List<AggregationOperation> aggregationOperations) {
         /**
          * Add the Facet aggregation operation to the pipeline to generate the relative facet. The following result is
@@ -281,27 +290,18 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     }
 
     /**
-     * Method to calculate the facet from the whole database
+     * Method to calculate the facet from the whole "observationLite" collection
      *
-     * @return FacetClassificationTmp object containing the facet element to be printed on UI
+     * @return FacetClassification object of the entire "observationLite" collection
      */
     @Override
-//    public FacetClassificationTmp initFacets() {
-//        List<AggregationOperation> aggregationOperations = new ArrayList<>();
-//        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
-//        aggregationOperations.add(facetOperation);
-//        FacetClassificationTmp facet = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations).withOptions(options), "observationsLite", FacetClassificationTmp.class)
-//                .getUniqueMappedResult();
-//        return facet;
-//    }
     public FacetClassification initFacets() {
         List<AggregationOperation> aggregationOperations = new ArrayList<>();
         return setFacetClassification(facetOperation, aggregationOperations);
     }
 
     /**
-     * Method used to change the page of the paginated result.
-     *
+     * Query the observationLiteDocument to be printed on a given result page in the user interface. This method is used when user is changing the page of the paginated result or when the first page of results is generated.     *
      * @param aggregationOperations List of MatchOperation defined filters form user interface
      * @param pageable Pageable object containing the number and the length of the page to be returned
      * @return Page object containing the results
@@ -514,35 +514,19 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                     Criteria.where("acronym").elemMatch(
                             Criteria.where("lang").is("en").and("text").is(item)))));
         });
-
-        /**
-         * Sort the result by theia variable alphabetical orderfirst and then by textScore descending
-         */
-//        aggregationOperations.add(Aggregation.project().and(
-//                ArrayOperators.Filter.filter("observations.observedProperty.theiaVariable.prefLabel")
-//                        .as("item")
-//                        .by(ComparisonOperators.Eq.valueOf("item.lang").equalToValue("en")))
-//                .as("theiaVariableEn"));
-        //aggregationOperations.add(Aggregation.sort(Sort.by(Sort.Order.desc("textScore"))).and(Sort.by(Sort.Order.asc("theiaVariableEn"))));
-        //aggregationOperations.add(Aggregation.sort(Sort.by(Sort.Order.desc("textScore"))));
         return aggregationOperations;
     }
 
     /**
-     * Method used to query the popup content depending of the document ids parameter
+     * Method used to query the popup content depending of the document ids parameter. Popup need the producer name,
+     * the station name and the variable names of the observation at the given sampling feature.
      *
      * @param ids String that can be parsed inot JSON object containing and array of documentIds
      * @return PopupContent object
      */
     @Override
     public PopupContent loadPopupContent(List<String> ids) {
-        //parse the string ids parameter into JSON Object
-        //JSONObject jsonIds = new JSONObject(ids);
-        //Parse json of ids into Set of List of String
         Set<String> observationIdsFromMarker = new HashSet<>();
-//        jsonIds.getJSONArray("ids").forEach(item1 -> {
-//            observationIdsFromMarker.add(item1.toString());
-//        });
         ids.forEach(item1 -> {
             observationIdsFromMarker.add(item1.toString());
         });
@@ -572,7 +556,6 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             /**
              * Theia variable name if it exists
              */
-            //TheiaVariable theiaVariable = null;
             if (item.getObservations().get(0).getObservedProperty().getTheiaVariable() != null) {
                 nameAndId.setTheiaVariableName(item.getObservations().get(0).getObservedProperty().getTheiaVariable().getPrefLabel());
             }
@@ -588,20 +571,6 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             nameAndId.setIds(observationIdsFromObservationsLite);
             nameAndId.setProducerVariableNames(producerVariableNamesFromObservationsLite);
             variableNameAndIds.add(nameAndId);
-
-//            PopupContent.VariableNameAndId variableNameAndId = new PopupContent.VariableNameAndId();
-//            variableNameAndId.setIds(observationIdsFromObservationsLite);
-//            if (item.getObservation().getObservedProperties().get(0).getTheiaVariable() != null) {
-//                variableNameAndId.setTheiaVariableName(item.getObservation().getObservedProperties().get(0).getTheiaVariable().getPrefLabel());
-//            } else {
-//                List<List<I18n>> producerVariableNames = new ArrayList();
-//                item.getObservation().getObservedProperties().forEach(element -> {
-//                    producerVariableNames.add(element.getName());
-//                });
-//                variableNameAndId.setProducerVariableNames(producerVariableNames);
-//            }
-//
-//            variableNameAndIds.add(variableNameAndId);
         });
 
         popupContent.setVariableNameAndIds(variableNameAndIds);
@@ -611,19 +580,28 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     /**
      * Get all the variables measured at the location of a station. The location can either be a point or a bbox.
      *
-     * @param
-     * @return
+     * @param coordinatesString String representation of the Json Array contenaining the coordinantes of the geojson object
+     * representing the location to be queried
+     * @return A list of TheiaVariable
      */
     @Override
     public List<TheiaVariable> getVariablesAtOneLocation(String coordinatesString) {
+        /**
+         * Parse the String representation of the Json array into a JSONArray
+         */
         JSONArray coordinates = new JSONArray(coordinatesString);
+        
+        /**
+         * Get the list of point of the coordinates if the location in order to calculate the BBOX containg the observation object
+         */
         List<Number[]> latLngs = new ArrayList<>();
-
         getPointRecursivly(coordinates, latLngs);
 
+        /**
+         * Calculate the BBOX
+         */
         List<Double> lat = new ArrayList<>();
         List<Double> lon = new ArrayList<>();
-//        List<Double> alt = new ArrayList<>();
 
         latLngs.forEach(item -> {
             lon.add(item[0].doubleValue());
@@ -634,6 +612,10 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         Double minLat = lat.stream().min(Comparator.comparing(Double::valueOf)).get();
         Double maxLat = lat.stream().max(Comparator.comparing(Double::valueOf)).get();
 
+        /**
+         * Create the aggregation pipeline used to query the TheiaVariable at a given location.
+         * If the location is a Point or a BBOX, different MatchOperation are generated.
+         */
         MatchOperation m1;
         Criteria andCriteria = new Criteria();
         if (Objects.equals(minLong, maxLong) && Objects.equals(minLat, maxLat)) {
@@ -650,31 +632,44 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, rp1), "observationsLite", TheiaVariable.class).getMappedResults();
     }
 
+    /**
+     * Query a list of observation from the "observationsLite" collection using the datasetId
+     * @param datasetId datasetId to be queried
+     * @return A list of Document. Each document is an list of ObservationLite object: {"observations":[ObservationLite, ObservationLite, ObservationLite]}
+     */
     @Override
     public List<Document> getObservationsOfADataset(String datasetId) {
         Criteria andCriteria = new Criteria();
-        andCriteria.andOperator(Criteria.where("observations.0.observedProperty.theiaVariable").exists(true), Criteria.where("dataset.datasetId").is(datasetId));
+        andCriteria.andOperator(Criteria.where("dataset.datasetId").is(datasetId));
         MatchOperation m1 = Aggregation.match(andCriteria);
         ProjectionOperation p1 = Aggregation.project().and("observations").as("observations");
-        //ReplaceRootOperation rp1 = Aggregation.replaceRoot().withValueOf("observations");
         return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1), "observationsLite", Document.class).getMappedResults();
     }
 
-//    @Override
-//    public List<MapItem> getMapItemsOfADataset(String datasetId) {
-//        return mongoTemplate.find(Query.query(Criteria.where("datasetId").is(datasetId)),MapItem.class, "mapItems");
-//    }
-//    
+    /**
+     * Get the observationId from the "observationsLite" collection of the document corresponding to a TheiaVariable at a 
+     * given location.
+     * @param queryFilter String representation of a Json object containing the query parameter. 
+     * ex: {\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}
+     * @return List of String corresponding to the ids queried
+     */
     @Override
     public List<String> getObservationIdsOfOtherTheiaVariableAtLocation(String queryFilter) {
+        /**
+         * Parse the json string into a JSONObject
+         */
         JSONObject queryFilterJson = new JSONObject(queryFilter);
         List<Number[]> latLngs = new ArrayList<>();
-
+        /**
+         * Store the point of the "coordinates" of the location into an array
+         */
         getPointRecursivly(queryFilterJson.getJSONArray("coordinates"), latLngs);
 
+        /**
+         * Calculate the BBOX of the location
+         */
         List<Double> lat = new ArrayList<>();
         List<Double> lon = new ArrayList<>();
-//        List<Double> alt = new ArrayList<>();
 
         latLngs.forEach(item -> {
             lon.add(item[0].doubleValue());
@@ -685,6 +680,9 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         Double minLat = lat.stream().min(Comparator.comparing(Double::valueOf)).get();
         Double maxLat = lat.stream().max(Comparator.comparing(Double::valueOf)).get();
 
+        /**
+         * Query the observation ids according to the BBOX or the Point of the location and using the uri of the Theia Variable.
+         */
         MatchOperation m1;
         Criteria andCriteria = new Criteria();
         if (Objects.equals(minLong, maxLong) && Objects.equals(minLat, maxLat)) {
@@ -705,6 +703,11 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         return doc.get("observationId", List.class);
     }
 
+    /**
+     * Recursive method used to store all value of a GeoJSON coordinantes fields into an array
+     * @param coordinates JSONArray representation of the 'coordinantes' fields of a GEoJSON object
+     * @param latLngs The List that will be filled using all the position of the 'coordinates' field.
+     */
     private void getPointRecursivly(JSONArray coordinates, List<Number[]> latLngs) {
         for (int i = 0; i < coordinates.length(); i++) {
             if (coordinates.optJSONArray(i) != null) {

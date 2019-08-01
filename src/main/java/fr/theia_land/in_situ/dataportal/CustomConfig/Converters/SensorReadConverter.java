@@ -11,7 +11,6 @@ import fr.theia_land.in_situ.dataportal.mdl.POJO.Sensor;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.TemporalExtent;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.VirtualSensor;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import org.bson.Document;
 import org.springframework.core.convert.converter.Converter;

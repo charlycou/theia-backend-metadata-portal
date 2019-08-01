@@ -7,7 +7,6 @@ package fr.theia_land.in_situ.dataportal.CustomConfig;
 
 import com.google.common.base.Predicate;
 import static com.google.common.base.Predicates.or;
-import io.swagger.annotations.ApiOperation;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +26,10 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig implements WebMvcConfigurer {
 
+    /**
+     * Configure Swagger2 documentation autogeneration
+     * @return Docket 
+     */
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -39,21 +42,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
     private Predicate<RequestHandler> selectors() {
         return or(
                 RequestHandlerSelectors.basePackage("fr.theia_land.in_situ.dataportal")
-//                RequestHandlerSelectors.withClassAnnotation(ApiOperation.class),
-//                RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)
         );
     }
 
-//@Override
-//public void addViewControllers(ViewControllerRegistry registry) {
-//	registry.addRedirectViewController("/api-documentation/v2/api-docs", "/v2/api-docs").setKeepQueryParams(true);
-//	registry.addRedirectViewController("/api-documentation/swagger-resources/configuration/ui","/swagger-resources/configuration/ui");
-//	registry.addRedirectViewController("/api-documentation/swagger-resources/configuration/security","/swagger-resources/configuration/security");
-//	registry.addRedirectViewController("/api-documentation/swagger-resources", "/swagger-resources");
-//}
-//
-//@Override
-//public void addResourceHandlers(ResourceHandlerRegistry registry) {
-//	registry.addResourceHandler("/api-documentation/**").addResourceLocations("classpath:/META-INF/resources/");
-//}
 }

@@ -32,7 +32,6 @@ import io.swagger.annotations.Example;
 import io.swagger.annotations.ExampleProperty;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -82,6 +81,12 @@ public class ObservationsController {
         return observationDocuments;
     }
 
+    /**
+     * Finds observationId of a TheiaVariable at a given location.
+     * The documents are queried from 'ObservationsLite' collection using the uri of the theia vairable and the coordinantes field of a geoJson object
+     * @param payload String - {\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}
+     * @return List of String corresponding to the ids queried
+     */
     @ApiOperation(value = "Finds observationId of a TheiaVariable at a given location ",
             notes = "The documents are queried from 'ObservationsLite' collection using the uri of the theia vairable and the coordinantes field of a geoJson object",
             response = ObservationDocument.class,
@@ -97,6 +102,12 @@ public class ObservationsController {
         return this.observationDocumentLiteRepository.getObservationIdsOfOtherTheiaVariableAtLocation(payload);
     }
 
+    /**
+     * Finds Theia variable available at a given location.
+     * The documents are queried using 'coordinates' field of a geojson object fields. ex: [3.795429,43.64558,0]
+     * @param payload String value of coordinantes geojsonfields. ex: [3.795429,43.64558,0]
+     * @return List of TheiaVariable corresponding to the query. 
+     */
     @ApiOperation(value = "Finds Theia variable available at a given location ",
             notes = "The documents are queried using 'coordinates' field of a geojson object fields. ex: [3.795429,43.64558,0]",
             response = TheiaVariable.class,
@@ -112,6 +123,12 @@ public class ObservationsController {
         return this.observationDocumentLiteRepository.getVariablesAtOneLocation(payload);
     }
 
+    
+    /**
+     * Find all mapItems of a given dataset. Documents are queried from the 'observationsLite' collection using the 'datasetId'
+     * @param datasetId String - ex: KARS_DAT_MOSSON-1
+     * @return List of Document - Each document is an list of ObservationLite object: {"observations":[ObservationLite, ObservationLite, ObservationLite]}
+     */
     @ApiOperation(value = "Find all mapItems of a given dataset",
             notes = "Documents are queried from the 'observationsLite' collection using the 'datasetId'",
             response = Document.class,
@@ -125,6 +142,11 @@ public class ObservationsController {
         return this.observationDocumentLiteRepository.getObservationsOfADataset(datasetId);
     }
 
+    /**
+     * Find all mapItems of a given dataset. Documents are queried from the 'mapItems' collection using the 'datasetId'
+     * @param datasetId String - ex: KARS_DAT_MOSSON-1
+     * @return List of MapItems
+     */
     @ApiOperation(value = "Find all mapItems of a given dataset",
             notes = "Documents are queried from the 'mapItems' collection using the 'datasetId'",
             response = MapItem.class,
@@ -228,7 +250,7 @@ public class ObservationsController {
     /**
      * Method used to initialise the facet using the entier database
      *
-     * @return FacetClassificationTmp object
+     * @return FacetClassification containing the facet elements calculated
      */
     @ApiOperation(value = "Initialize the facet elements",
             notes = "The facet elements and their count are calculated over the entire 'ObservationsLite' collection",
@@ -239,13 +261,13 @@ public class ObservationsController {
     }
 
     /**
-     * Method used to change the page of hte paginated ObservationDocumentLite resulting from a query
+     * Method used to change the page of the paginated ObservationDocumentLite resulting from a query
      *
      * @param payload String that can be parsed into json object containg the filters used to query the database, the
      * pageSelected and the number observation per page
      * @return Page of ObservationDocumentLite object
      */
-    @ApiOperation(value = "Find the document to print in hte observation from 'ObservationsLite' collection  ",
+    @ApiOperation(value = "Find the document to print in tte observation from 'ObservationsLite' collection  ",
             notes = "The documents are queried using the filters json object, the page size and the page number' fields",
             response = ObservationDocumentLite.class,
             responseContainer = "Page")
