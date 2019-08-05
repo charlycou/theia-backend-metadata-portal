@@ -6,7 +6,6 @@
 package fr.theia_land.in_situ.dataportal.controller;
 
 import fr.theia_land.in_situ.dataportal.DAO.CustomObservationDocumentLiteRepositoryImpl;
-import fr.theia_land.in_situ.dataportal.DAO.MapItemRepository;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentRepository;
@@ -22,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentLiteRepository;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.SpatialExtent;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.MapItem;
@@ -52,8 +52,6 @@ public class ObservationsController {
     private ObservationDocumentLiteRepository observationDocumentLiteRepository;
     @Autowired
     private ObservationDocumentRepository observationDocumentRepository;
-    @Autowired
-    private MapItemRepository mapItemRepository;
 
     /**
      * method used to show detailed information about observations
@@ -147,17 +145,17 @@ public class ObservationsController {
      * @param datasetId String - ex: KARS_DAT_MOSSON-1
      * @return List of MapItems
      */
-    @ApiOperation(value = "Find all mapItems of a given dataset",
-            notes = "Documents are queried from the 'mapItems' collection using the 'datasetId'",
+    @ApiOperation(value = "Find the BBOX of a given dataset",
+            notes = "Document are queried from the 'observations' collection using the 'datasetId'",
             response = MapItem.class,
             responseContainer = "List")
-    @GetMapping("/getMapItemsOfADataset/{datasetId}")
-    public List<MapItem> getMapItemsOfADataset(
+    @GetMapping("/getBBOXOfADataset/{datasetId}")
+    public SpatialExtent getBBOXOfOfADataset(
             @ApiParam(required = true,
                     value = "Example (quotes inside brackets can be badly escaped by UI...):\n KARS_DAT_MOSSON-1",
                     example = "KARS_DAT_MOSSON-1")
             @PathVariable String datasetId) {
-        return this.mapItemRepository.findByDatasetId(datasetId);
+        return this.observationDocumentRepository.findDatasetSpatialExtent(datasetId);
     }
 
     /**

@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * Spring data will defined ObservationDocumentRepositoryImpl.class that will be injected and instanciated by classes 
  * needing it
  */
-public interface ObservationDocumentRepository extends MongoRepository<ObservationDocument, ObjectId>{
+public interface ObservationDocumentRepository extends MongoRepository<ObservationDocument, ObjectId>, CustomObservationDocumentRepository{
     
     /**
      * 
@@ -23,5 +23,4 @@ public interface ObservationDocumentRepository extends MongoRepository<Observati
      * @return ObservationDocument.class
      */
     ObservationDocument findByDocumentId(String documentIds);
-
 }
