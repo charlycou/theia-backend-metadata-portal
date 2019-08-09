@@ -3,21 +3,20 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.theia_land.in_situ.dataportal.mdl.POJO.litePopup;
+package fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
 import java.util.List;
 
 /**
- *
+ * A file containing Result
  * @author coussotc
  */
-public class ProducerLitePopup {
+public class DataFile {
     /**
-     * Acronym of the Producer. ex AMMA-CATCH
+     * The name of the file with the extension
+     * ex: temperature_time_serie.csv
      */
     private List<I18n> name;
-   
 
     public List<I18n> getName() {
         return name;
@@ -27,4 +26,5 @@ public class ProducerLitePopup {
         this.name = name;
     }
     
+
 }

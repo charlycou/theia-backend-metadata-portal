@@ -5,7 +5,7 @@
  */
 package fr.theia_land.in_situ.dataportal.model;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
 import java.util.List;
 
 /**

@@ -5,10 +5,10 @@
  */
 package fr.theia_land.in_situ.dataportal.CustomConfig.Converters;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.SamplingFeature;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.SamplingGeometry;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.SamplingSpecimen;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.SamplingFeature;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.SamplingGeometry;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.SamplingSpecimen;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.GeometryGeoJSON;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.LineString;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.MultiLineString;

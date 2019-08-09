@@ -5,7 +5,7 @@
  */
 package fr.theia_land.in_situ.dataportal.mdl.POJO.facet;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
 import java.util.List;
 
 /**

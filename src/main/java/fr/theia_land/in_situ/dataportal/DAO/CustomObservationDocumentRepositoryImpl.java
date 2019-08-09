@@ -5,7 +5,7 @@
  */
 package fr.theia_land.in_situ.dataportal.DAO;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.SpatialExtent;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;

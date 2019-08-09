@@ -5,8 +5,8 @@
  */
 package fr.theia_land.in_situ.dataportal.DAO;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.MapItem;
 import fr.theia_land.in_situ.dataportal.model.ObservationDocumentLite;

@@ -5,9 +5,9 @@
  */
 package fr.theia_land.in_situ.dataportal.mdl.POJO.lite;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.FeatureOfInterest;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.ObservedProperty;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.TemporalExtent;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.FeatureOfInterest;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.ObservedProperty;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.TemporalExtent;
 
 /**
  *

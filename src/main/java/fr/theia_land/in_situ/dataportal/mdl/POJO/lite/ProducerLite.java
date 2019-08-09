@@ -5,8 +5,8 @@
  */
 package fr.theia_land.in_situ.dataportal.mdl.POJO.lite;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.Funding;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.producer.Funding;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
 import java.util.ArrayList;
 import java.util.List;
 

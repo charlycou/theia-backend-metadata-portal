@@ -5,7 +5,7 @@
  */
 package fr.theia_land.in_situ.dataportal.DAO;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.SpatialExtent;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
 
 /**
  * Interface for custom method definition

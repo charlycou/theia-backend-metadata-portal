@@ -5,11 +5,11 @@
  */
 package fr.theia_land.in_situ.dataportal.CustomConfig.Converters;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.PhysicalSensor;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.Sensor;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.TemporalExtent;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.VirtualSensor;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.PhysicalSensor;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.Sensor;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.TemporalExtent;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.VirtualSensor;
 import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;
@@ -61,7 +61,7 @@ public class SensorReadConverter implements Converter<Document, Sensor> {
             }
             if (source.get("document") != null) {
                 Document sourceDocument = source.get("document", Document.class);
-                fr.theia_land.in_situ.dataportal.mdl.POJO.Document document = new fr.theia_land.in_situ.dataportal.mdl.POJO.Document();
+                fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.Document document = new fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.Document();
                 document.setType(sourceDocument.get("type", String.class));
                 if (sourceDocument.get("url", Document.class) != null) {
                     List<I18n> url = new ArrayList<>();
@@ -103,7 +103,7 @@ public class SensorReadConverter implements Converter<Document, Sensor> {
             }
             if (source.get("document") != null) {
                 Document sourceDocument = source.get("document", Document.class);
-                fr.theia_land.in_situ.dataportal.mdl.POJO.Document document = new fr.theia_land.in_situ.dataportal.mdl.POJO.Document();
+                fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.Document document = new fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.Document();
                 document.setType(sourceDocument.get("type", String.class));
                 if (sourceDocument.get("url", Document.class) != null) {
                     List<I18n> url = new ArrayList<>();

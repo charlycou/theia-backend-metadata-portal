@@ -44,5 +44,4 @@ public class SwaggerConfig implements WebMvcConfigurer {
                 RequestHandlerSelectors.basePackage("fr.theia_land.in_situ.dataportal")
         );
     }
-
 }

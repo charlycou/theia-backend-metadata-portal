@@ -1,5 +1,6 @@
 package fr.theia_land.in_situ.dataportal;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -14,7 +15,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class DataportalApplication {
 
+    @Value("${spring.data.mongodb.uri}")
+    private static String test;
+    
     public static void main(String[] args) {
+        System.out.println(test);
         SpringApplication.run(DataportalApplication.class, args);
     }
 

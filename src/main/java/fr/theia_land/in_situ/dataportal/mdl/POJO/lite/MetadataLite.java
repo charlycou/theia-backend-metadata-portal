@@ -5,10 +5,9 @@
  */
 package fr.theia_land.in_situ.dataportal.mdl.POJO.lite;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
-//import fr.theia_land.in_situ.dataportal.mdl.POJO.I18nWeight1;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.SpatialExtent;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
 import java.util.List;
 
 /**

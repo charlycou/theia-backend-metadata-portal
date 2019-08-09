@@ -21,8 +21,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentLiteRepository;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.SpatialExtent;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.TheiaVariable;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.MapItem;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
@@ -64,12 +64,13 @@ public class ObservationsController {
             response = ObservationDocument.class,
             responseContainer = "List")
     @PostMapping("/showObservationsDetailed")
-    public List<ObservationDocument> findByDocumentId(@ApiParam(required = true,
-            value = "Example (quotes inside brackets can be badly escaped by UI...):\n [\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]",
-            example = "[\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]",
-            examples = @Example(value = {
-        @ExampleProperty(value = "[\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]")
-    }))
+    public List<ObservationDocument> findByDocumentId(
+            @ApiParam(required = true,
+                    value = "Example (quotes inside brackets can be badly escaped by UI...):\n [\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]",
+                    example = "[\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]",
+                    examples = @Example(value = {
+                @ExampleProperty(value = "[\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]")
+            }))
             @RequestBody String payload) {
         List<ObservationDocument> observationDocuments = new ArrayList<>();
         JSONArray jsonDocumentIds = new JSONArray(payload);
@@ -80,9 +81,11 @@ public class ObservationsController {
     }
 
     /**
-     * Finds observationId of a TheiaVariable at a given location.
-     * The documents are queried from 'ObservationsLite' collection using the uri of the theia vairable and the coordinantes field of a geoJson object
-     * @param payload String - {\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}
+     * Finds observationId of a TheiaVariable at a given location. The documents are queried from 'ObservationsLite'
+     * collection using the uri of the theia vairable and the coordinantes field of a geoJson object
+     *
+     * @param payload String -
+     * {\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}
      * @return List of String corresponding to the ids queried
      */
     @ApiOperation(value = "Finds observationId of a TheiaVariable at a given location ",
@@ -101,10 +104,11 @@ public class ObservationsController {
     }
 
     /**
-     * Finds Theia variable available at a given location.
-     * The documents are queried using 'coordinates' field of a geojson object fields. ex: [3.795429,43.64558,0]
+     * Finds Theia variable available at a given location. The documents are queried using 'coordinates' field of a
+     * geojson object fields. ex: [3.795429,43.64558,0]
+     *
      * @param payload String value of coordinantes geojsonfields. ex: [3.795429,43.64558,0]
-     * @return List of TheiaVariable corresponding to the query. 
+     * @return List of TheiaVariable corresponding to the query.
      */
     @ApiOperation(value = "Finds Theia variable available at a given location ",
             notes = "The documents are queried using 'coordinates' field of a geojson object fields. ex: [3.795429,43.64558,0]",
@@ -121,11 +125,13 @@ public class ObservationsController {
         return this.observationDocumentLiteRepository.getVariablesAtOneLocation(payload);
     }
 
-    
     /**
-     * Find all mapItems of a given dataset. Documents are queried from the 'observationsLite' collection using the 'datasetId'
+     * Find all mapItems of a given dataset. Documents are queried from the 'observationsLite' collection using the
+     * 'datasetId'
+     *
      * @param datasetId String - ex: KARS_DAT_MOSSON-1
-     * @return List of Document - Each document is an list of ObservationLite object: {"observations":[ObservationLite, ObservationLite, ObservationLite]}
+     * @return List of Document - Each document is an list of ObservationLite object: {"observations":[ObservationLite,
+     * ObservationLite, ObservationLite]}
      */
     @ApiOperation(value = "Find all mapItems of a given dataset",
             notes = "Documents are queried from the 'observationsLite' collection using the 'datasetId'",
@@ -142,6 +148,7 @@ public class ObservationsController {
 
     /**
      * Find all mapItems of a given dataset. Documents are queried from the 'mapItems' collection using the 'datasetId'
+     *
      * @param datasetId String - ex: KARS_DAT_MOSSON-1
      * @return List of MapItems
      */

@@ -5,10 +5,10 @@
  */
 package fr.theia_land.in_situ.dataportal.CustomConfig.Converters;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.Contact;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.I18n;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.Organisation;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.Person;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.Contact;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.Organisation;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.Person;
 import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;

@@ -5,7 +5,7 @@
  */
 package fr.theia_land.in_situ.dataportal.mdl.POJO.litePopup;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.FeatureOfInterest;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.FeatureOfInterest;
 import java.util.List;
 
 /**
