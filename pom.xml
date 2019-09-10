@@ -95,7 +95,7 @@
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>1.0.0</version>
-                <configuration>
+<!--                <configuration>
                     <to>
                         <image>registry.hub.docker.com/charlycou/springboot-dataportal-image:latest</image>
                     </to>
@@ -104,7 +104,7 @@
                             <port>8080</port>
                         </ports>
                     </container>
-                </configuration>
+                </configuration>-->
             </plugin>
         </plugins>
     </build>
