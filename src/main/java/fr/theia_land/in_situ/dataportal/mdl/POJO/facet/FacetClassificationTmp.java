@@ -17,7 +17,7 @@ public class FacetClassificationTmp {
 
     private List<TheiaCategoryFacetElement> theiaCategorieFacetElements;
     private List<FundingsCount> fundingNamesFacet;
-    private List<FundingsCount> fundingAcronymsFacet;
+    //private List<FundingsCount> fundingAcronymsFacet;
     private List<ElementaryCount> climatesFacet;
     private List<ElementaryCount> geologiesFacet;
     private List<ElementaryCount> producerNamesFacet;
@@ -39,13 +39,13 @@ public class FacetClassificationTmp {
         this.fundingNamesFacet = fundingNamesFacet;
     }
 
-    public List<FundingsCount> getFundingAcronymsFacet() {
-        return fundingAcronymsFacet;
-    }
-
-    public void setFundingAcronymsFacet(List<FundingsCount> fundingAcronymsFacet) {
-        this.fundingAcronymsFacet = fundingAcronymsFacet;
-    }
+//    public List<FundingsCount> getFundingAcronymsFacet() {
+//        return fundingAcronymsFacet;
+//    }
+//
+//    public void setFundingAcronymsFacet(List<FundingsCount> fundingAcronymsFacet) {
+//        this.fundingAcronymsFacet = fundingAcronymsFacet;
+//    }
 
     public List<ElementaryCount> getClimatesFacet() {
         return climatesFacet;

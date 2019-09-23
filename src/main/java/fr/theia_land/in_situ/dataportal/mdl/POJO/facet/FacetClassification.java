@@ -17,17 +17,17 @@ public class FacetClassification {
     private List<TheiaVariable> theiaVariables;
     private List<TheiaCategoryTree> theiaCategoryTree;
     private List<FundingsCount> fundingNamesFacet;
-    private List<FundingsCount> fundingAcronymsFacet;
+    //private List<FundingsCount> fundingAcronymsFacet;
     private List<ElementaryCount> climatesFacet;
     private List<ElementaryCount> geologiesFacet;
     private List<ElementaryCount> producerNamesFacet;
     private List<ElementaryCount> totalCount;
 
-    public FacetClassification(List<TheiaVariable> theiaVariables, List<TheiaCategoryTree> theiaCategoryTree, List<FundingsCount> fundingNamesFacet, List<FundingsCount> fundingAcronymsFacet, List<ElementaryCount> climatesFacet, List<ElementaryCount> geologiesFacet, List<ElementaryCount> producerNamesFacet, List<ElementaryCount> totalCount) {
+    public FacetClassification(List<TheiaVariable> theiaVariables, List<TheiaCategoryTree> theiaCategoryTree, List<FundingsCount> fundingNamesFacet, List<ElementaryCount> climatesFacet, List<ElementaryCount> geologiesFacet, List<ElementaryCount> producerNamesFacet, List<ElementaryCount> totalCount) {
         this.theiaVariables = theiaVariables;
         this.theiaCategoryTree = theiaCategoryTree;
         this.fundingNamesFacet = fundingNamesFacet;
-        this.fundingAcronymsFacet = fundingAcronymsFacet;
+        //this.fundingAcronymsFacet = fundingAcronymsFacet;
         this.climatesFacet = climatesFacet;
         this.geologiesFacet = geologiesFacet;
         this.producerNamesFacet = producerNamesFacet;
@@ -60,13 +60,13 @@ public class FacetClassification {
         this.fundingNamesFacet = fundingNamesFacet;
     }
 
-    public List<FundingsCount> getFundingAcronymsFacet() {
-        return fundingAcronymsFacet;
-    }
-
-    public void setFundingAcronymsFacet(List<FundingsCount> fundingAcronymsFacet) {
-        this.fundingAcronymsFacet = fundingAcronymsFacet;
-    }
+//    public List<FundingsCount> getFundingAcronymsFacet() {
+//        return fundingAcronymsFacet;
+//    }
+//
+//    public void setFundingAcronymsFacet(List<FundingsCount> fundingAcronymsFacet) {
+//        this.fundingAcronymsFacet = fundingAcronymsFacet;
+//    }
 
     public List<ElementaryCount> getClimatesFacet() {
         return climatesFacet;

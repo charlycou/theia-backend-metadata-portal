@@ -10,9 +10,17 @@ package fr.theia_land.in_situ.dataportal.mdl.POJO.facet;
  * @author coussotc
  */
 public class FundingsCount {
-    private String name, type;
+    private String name, acronym, type;
     private int count;
 
+    public String getAcronym() {
+        return acronym;
+    }
+
+    public void setAcronym(String acronym) {
+        this.acronym = acronym;
+    }
+    
     public String getName() {
         return name;
     }

@@ -19,11 +19,13 @@ import fr.theia_land.in_situ.dataportal.model.ResponseDocument;
 import fr.theia_land.in_situ.import_module.CustomConfig.GenericAggregationOperation;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -96,36 +98,37 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                             .and("theiaVariables").as("theiaVariables")
             )
             .as("theiaCategorieFacetElements")
-            .and(
-                    unwind("producer.fundings"),
-                    project().and("producer.fundings.type").as("type").and("producer.fundings.acronym").as("name"),
-                    group("name", "type").count().as("count"),
-                    project("count").and("_id.name").as("name").and("_id.type").as("type").andExclude("_id")
-            ).as("fundingAcronymsFacet")
             .and(unwind("producer.fundings"),
                     project().and("producer.fundings.type").as("type")
+                            .and("producer.fundings.acronym").as("acronym")
                             .and(filter("producer.fundings.name").as("item")
                                     .by(valueOf("item.lang")
                                             .equalToValue("en")))
                             .as("name"),
-                    project("type").and(ArrayOperators.ArrayElemAt.arrayOf("name.text").elementAt(0)).as("name"),
-                    group("type", "name").count().as("count"),
-                    project("count").and("_id.name").as("name").and("_id.type").as("type").andExclude("_id")
+                    project("type")
+                            .and(ArrayOperators.ArrayElemAt.arrayOf("name.text").elementAt(0)).as("name")
+                            .and("acronym").as("acronym"),
+                    group("type", "name", "acronym").count().as("count"),
+                    project("count").and("_id.name").as("name").and("_id.acronym").as("acronym").and("_id.type").as("type").andExclude("_id"),
+                     Aggregation.sort(Sort.Direction.ASC, "name")
             ).as("fundingNamesFacet")
             .and(unwind("dataset.metadata.portalSearchCriteria.climates"),
                     project().and("dataset.metadata.portalSearchCriteria.climates").as("name"),
-                    group("name").count().as("count")
+                    group("name").count().as("count"),
+                    Aggregation.sort(Sort.Direction.ASC, "_id")
             ).as("climatesFacet")
             .and(unwind("dataset.metadata.portalSearchCriteria.geologies"),
                     project().and("dataset.metadata.portalSearchCriteria.geologies").as("name"),
-                    group("name").count().as("count")
+                    group("name").count().as("count"),
+                    Aggregation.sort(Sort.Direction.ASC, "_id")
             ).as("geologiesFacet")
             .and(project().and(filter("producer.name").as("item")
                     .by(valueOf("item.lang")
                             .equalToValue("en")))
                     .as("name"),
                     project().and(ArrayOperators.ArrayElemAt.arrayOf("name.text").elementAt(0)).as("name"),
-                    group("name").count().as("count")
+                    group("name").count().as("count"),
+                    Aggregation.sort(Sort.Direction.ASC, "_id")
             ).as("producerNamesFacet")
             .and(group().count().as("count"))
             .as("totalCount");
@@ -144,7 +147,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         ResponseDocument responseDocument = new ResponseDocument();
 
         /**
-         * Aggregation pipeline to be executed to find the observation matching the query in "observationsLite" collection.
+         * Aggregation pipeline to be executed to find the observation matching the query in "observationsLite"
+         * collection.
          */
         List<AggregationOperation> aggregationOperations = setMatchOperationUsingFilters(queryElements);
 
@@ -156,8 +160,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         responseDocument.setObservationDocumentLitePage(getObservationsPage(aggregationOperations, PageRequest.of(0, 10)));
 
         /**
-         * Add Unwind and project aggregation operation to the aggregation pipeline in order to return all the observationId
-         * matching the query
+         * Add Unwind and project aggregation operation to the aggregation pipeline in order to return all the
+         * observationId matching the query
          */
         UnwindOperation u1 = Aggregation.unwind("observations");
         ProjectionOperation p1 = Aggregation.project().and("observations.observationId").as("observationId").andExclude("_id");
@@ -196,7 +200,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             observationIdsFromMapItems.retainAll(observationLiteIds);
             item.setObservationIds(new ArrayList<>(observationIdsFromMapItems));
         });
-        
+
         /**
          * Store the mapItems and the facets in the ResponseDocument
          */
@@ -207,9 +211,10 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
 
     /**
      * Calculate the facet for a given set of filters defined by user.
+     *
      * @param facetOperation FacetOperation aggregation operation to be executed to calculate the facets
      * @param aggregationOperations The aggregation pipeline generated for the set of filter defined by the user
-     * @return FacetClassification object corresponding to the filters 
+     * @return FacetClassification object corresponding to the filters
      */
     private FacetClassification setFacetClassification(FacetOperation facetOperation, List<AggregationOperation> aggregationOperations) {
         /**
@@ -228,7 +233,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
          * 1 - Build the category tree 2 - Build the collection of Theia Variable
          */
         List<TheiaCategoryTree> categoryTrees = new ArrayList<>();
-        Set<TheiaVariable> theiaVariables = new HashSet<>();
+        Set<TheiaVariable> theiaVariablesTmp = new HashSet<>();
         facetClassificationTmp.getTheiaCategorieFacetElements().stream().filter((t) -> {
             return t.getBroaders().contains("https://w3id.org/ozcar-theia/variableCategories"); //To change body of generated lambdas, choose Tools | Templates.
         }).forEach((t) -> {
@@ -239,14 +244,15 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             /**
              * Build the list of Theia variable
              */
-            theiaVariables.addAll(t.getTheiaVariables());
+            theiaVariablesTmp.addAll(t.getTheiaVariables());
         });
-
+        //Sort in alphabetical order
+        List<TheiaVariable> theiaVariables = theiaVariablesTmp.stream().sorted((object1, object2) -> object1.getUri().compareTo(object2.getUri())).collect(Collectors.toList());
+        Collections.sort(categoryTrees, Comparator.comparing(TheiaCategoryTree::getUri));
         return new FacetClassification(
-                new ArrayList(theiaVariables),
+                theiaVariables,
                 categoryTrees,
                 facetClassificationTmp.getFundingNamesFacet(),
-                facetClassificationTmp.getFundingAcronymsFacet(),
                 facetClassificationTmp.getClimatesFacet(),
                 facetClassificationTmp.getGeologiesFacet(),
                 facetClassificationTmp.getProducerNamesFacet(),
@@ -301,7 +307,10 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     }
 
     /**
-     * Query the observationLiteDocument to be printed on a given result page in the user interface. This method is used when user is changing the page of the paginated result or when the first page of results is generated.     *
+     * Query the observationLiteDocument to be printed on a given result page in the user interface. This method is used
+     * when user is changing the page of the paginated result or when the first page of results is generated.
+     *
+     *
      * @param aggregationOperations List of MatchOperation defined filters form user interface
      * @param pageable Pageable object containing the number and the length of the page to be returned
      * @return Page object containing the results
@@ -518,8 +527,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     }
 
     /**
-     * Method used to query the popup content depending of the document ids parameter. Popup need the producer name,
-     * the station name and the variable names of the observation at the given sampling feature.
+     * Method used to query the popup content depending of the document ids parameter. Popup need the producer name, the
+     * station name and the variable names of the observation at the given sampling feature.
      *
      * @param ids String that can be parsed inot JSON object containing and array of documentIds
      * @return PopupContent object
@@ -580,8 +589,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     /**
      * Get all the variables measured at the location of a station. The location can either be a point or a bbox.
      *
-     * @param coordinatesString String representation of the Json Array contenaining the coordinantes of the geojson object
-     * representing the location to be queried
+     * @param coordinatesString String representation of the Json Array contenaining the coordinantes of the geojson
+     * object representing the location to be queried
      * @return A list of TheiaVariable
      */
     @Override
@@ -590,9 +599,10 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
          * Parse the String representation of the Json array into a JSONArray
          */
         JSONArray coordinates = new JSONArray(coordinatesString);
-        
+
         /**
-         * Get the list of point of the coordinates if the location in order to calculate the BBOX containg the observation object
+         * Get the list of point of the coordinates if the location in order to calculate the BBOX containg the
+         * observation object
          */
         List<Number[]> latLngs = new ArrayList<>();
         getPointRecursivly(coordinates, latLngs);
@@ -613,8 +623,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         Double maxLat = lat.stream().max(Comparator.comparing(Double::valueOf)).get();
 
         /**
-         * Create the aggregation pipeline used to query the TheiaVariable at a given location.
-         * If the location is a Point or a BBOX, different MatchOperation are generated.
+         * Create the aggregation pipeline used to query the TheiaVariable at a given location. If the location is a
+         * Point or a BBOX, different MatchOperation are generated.
          */
         MatchOperation m1;
         Criteria andCriteria = new Criteria();
@@ -634,8 +644,10 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
 
     /**
      * Query a list of observation from the "observationsLite" collection using the datasetId
+     *
      * @param datasetId datasetId to be queried
-     * @return A list of Document. Each document is an list of ObservationLite object: {"observations":[ObservationLite, ObservationLite, ObservationLite]}
+     * @return A list of Document. Each document is an list of ObservationLite object: {"observations":[ObservationLite,
+     * ObservationLite, ObservationLite]}
      */
     @Override
     public List<Document> getObservationsOfADataset(String datasetId) {
@@ -647,10 +659,11 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     }
 
     /**
-     * Get the observationId from the "observationsLite" collection of the document corresponding to a TheiaVariable at a 
-     * given location.
-     * @param queryFilter String representation of a Json object containing the query parameter. 
-     * ex: {\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}
+     * Get the observationId from the "observationsLite" collection of the document corresponding to a TheiaVariable at
+     * a given location.
+     *
+     * @param queryFilter String representation of a Json object containing the query parameter. ex:
+     * {\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}
      * @return List of String corresponding to the ids queried
      */
     @Override
@@ -681,7 +694,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         Double maxLat = lat.stream().max(Comparator.comparing(Double::valueOf)).get();
 
         /**
-         * Query the observation ids according to the BBOX or the Point of the location and using the uri of the Theia Variable.
+         * Query the observation ids according to the BBOX or the Point of the location and using the uri of the Theia
+         * Variable.
          */
         MatchOperation m1;
         Criteria andCriteria = new Criteria();
@@ -705,6 +719,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
 
     /**
      * Recursive method used to store all value of a GeoJSON coordinantes fields into an array
+     *
      * @param coordinates JSONArray representation of the 'coordinantes' fields of a GEoJSON object
      * @param latLngs The List that will be filled using all the position of the 'coordinates' field.
      */

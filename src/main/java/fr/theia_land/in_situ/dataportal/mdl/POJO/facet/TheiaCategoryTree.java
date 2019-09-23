@@ -9,6 +9,7 @@ import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -18,8 +19,8 @@ public class TheiaCategoryTree {
     private String uri;
     private List<I18n> prefLabel;
     private int count;
-    private Set<TheiaCategoryTree> narrowers;
-    private Set<TheiaVariable> theiaVariables;
+    private List<TheiaCategoryTree> narrowers;
+    private List<TheiaVariable> theiaVariables;
 
     private TheiaCategoryTree() {
     }
@@ -31,7 +32,7 @@ public class TheiaCategoryTree {
         hierarchy.setUri(uri);;
         hierarchy.setPrefLabel(prefLabel);
         hierarchy.setCount(count);
-        hierarchy.setNarrowers(narrowers);
+        hierarchy.setNarrowers(narrowers.stream().sorted((object1, object2) -> object1.getUri().compareTo(object2.getUri())).collect(Collectors.toList()));
         return hierarchy;
     }
 
@@ -40,7 +41,7 @@ public class TheiaCategoryTree {
         hierarchy.setUri(uri);;
         hierarchy.setPrefLabel(prefLabel);
         hierarchy.setCount(count);
-        hierarchy.setTheiaVariables(theiaVariables);
+        hierarchy.setTheiaVariables(theiaVariables.stream().sorted((object1, object2) -> object1.getUri().compareTo(object2.getUri())).collect(Collectors.toList()));
         return hierarchy;
     }
     
@@ -64,22 +65,21 @@ public class TheiaCategoryTree {
         this.prefLabel = prefLabel;
     }
 
-    public Set<TheiaCategoryTree> getNarrowers() {
+    public List<TheiaCategoryTree> getNarrowers() {
         return narrowers;
     }
 
-    public void setNarrowers(Set<TheiaCategoryTree> narrowers) {
+    public void setNarrowers(List<TheiaCategoryTree> narrowers) {
         this.narrowers = narrowers;
     }
 
-    public Set<TheiaVariable> getTheiaVariables() {
+    public List<TheiaVariable> getTheiaVariables() {
         return theiaVariables;
     }
 
-    public void setTheiaVariables(Set<TheiaVariable> theiaVariables) {
+    public void setTheiaVariables(List<TheiaVariable> theiaVariables) {
         this.theiaVariables = theiaVariables;
     }
-
 
     public int getCount() {
         return count;

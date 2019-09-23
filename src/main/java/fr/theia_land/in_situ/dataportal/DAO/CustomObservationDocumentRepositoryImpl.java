@@ -32,7 +32,5 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
         ReplaceRootOperation r1 = Aggregation.replaceRoot("dataset.metadata.spatialExtent");
         LimitOperation l1 = Aggregation.limit(1);
         return mongoTemplate.aggregate(Aggregation.newAggregation(m1,r1,l1),"observations", SpatialExtent.class).getUniqueMappedResult();
-        
     }
-
 }
