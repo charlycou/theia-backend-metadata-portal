@@ -5,12 +5,16 @@
  */
 package fr.theia_land.in_situ.dataportal.mdl.POJO.facet;
 
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
+import java.util.List;
+
 /**
  *
  * @author coussotc
  */
 public class FundingsCount {
     private String name, acronym, type;
+    private List<I18n> country;
     private int count;
 
     public String getAcronym() {
@@ -44,6 +48,16 @@ public class FundingsCount {
     public void setCount(int count) {
         this.count = count;
     }
+
+    public List<I18n> getCountry() {
+        return country;
+    }
+
+    public void setCountry(List<I18n> country) {
+        this.country = country;
+    }
+
+    
     
     
     

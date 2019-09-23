@@ -101,16 +101,18 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             .and(unwind("producer.fundings"),
                     project().and("producer.fundings.type").as("type")
                             .and("producer.fundings.acronym").as("acronym")
+                            .and("producer.fundings.country").as("country")
                             .and(filter("producer.fundings.name").as("item")
                                     .by(valueOf("item.lang")
                                             .equalToValue("en")))
                             .as("name"),
                     project("type")
                             .and(ArrayOperators.ArrayElemAt.arrayOf("name.text").elementAt(0)).as("name")
-                            .and("acronym").as("acronym"),
-                    group("type", "name", "acronym").count().as("count"),
-                    project("count").and("_id.name").as("name").and("_id.acronym").as("acronym").and("_id.type").as("type").andExclude("_id"),
-                     Aggregation.sort(Sort.Direction.ASC, "name")
+                            .and("acronym").as("acronym")
+                            .and("country").as("country"),
+                    group("type", "name", "acronym", "country").count().as("count"),
+                    project("count").and("_id.name").as("name").and("_id.acronym").as("acronym").and("_id.country").as("country").and("_id.type").as("type").andExclude("_id"),
+                    Aggregation.sort(Sort.Direction.ASC, "name")
             ).as("fundingNamesFacet")
             .and(unwind("dataset.metadata.portalSearchCriteria.climates"),
                     project().and("dataset.metadata.portalSearchCriteria.climates").as("name"),
