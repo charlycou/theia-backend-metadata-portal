@@ -16,7 +16,7 @@ public class Funding {
     /**
      * The organism type according to EnumFundingTypes enumeration
      */
-    private String type;
+    private String type, idScanR;
     
     /**
      * Acronym of the organism affiliated
@@ -26,7 +26,7 @@ public class Funding {
     /**
      * Complete name of the affiliation
      */
-    private List<I18n> name;
+    private List<I18n> name, country;
 
     public String getType() {
         return type;
@@ -50,6 +50,22 @@ public class Funding {
 
     public void setName(List<I18n> name) {
         this.name = name;
+    }
+
+    public String getIdScanR() {
+        return idScanR;
+    }
+
+    public void setIdScanR(String idScanR) {
+        this.idScanR = idScanR;
+    }
+
+    public List<I18n> getCountry() {
+        return country;
+    }
+
+    public void setCountry(List<I18n> country) {
+        this.country = country;
     }
     
    

@@ -22,8 +22,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentLiteRepository;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.producer.Producer;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryTree;
 import fr.theia_land.in_situ.dataportal.model.MapItem;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
 import io.swagger.annotations.ApiOperation;
@@ -164,6 +167,51 @@ public class ObservationsController {
                     example = "KARS_DAT_MOSSON-1")
             @PathVariable String datasetId) {
         return this.observationDocumentRepository.findDatasetSpatialExtent(datasetId);
+    }
+
+    /**
+     * Find the category branches to be printed in info-panel for a list of category
+     * @param payload list of uri of the theia categories
+     * @return List of List of List of I18n corresponding to the prefLabel of each Theia categories concept
+     */
+    @ApiOperation(value = "Find the category branches of the list of Theia Category",
+            notes = "Document are queried from the 'observations'",
+            response = List.class,
+            responseContainer = "List")
+    @PostMapping("/getCategoryHierarchies")
+    public List<List<List<I18n>>> getCategoryHierarchies(
+            @ApiParam(required = true,
+                    value = "Example (quotes inside brackets can be badly escaped by UI...):\n [\"https://w3id.org/ozcar-theia/surfaceWaterMajorIons\"]",
+                    example = "[\"https://w3id.org/ozcar-theia/surfaceWaterMajorIons\"]")
+            @RequestBody List<String> payload) {
+        List<TheiaCategoryTree> theiaCategoryTrees = this.observationDocumentRepository.getCategoryHierarchies(payload);
+        List<List<List<I18n>>> categoriesHierarchies = new ArrayList();
+        for (TheiaCategoryTree tct : theiaCategoryTrees) {
+            categoriesHierarchies.addAll(setCategoryBranches(tct));
+        }
+        return categoriesHierarchies;
+    }
+
+    private List<List<List<I18n>>> setCategoryBranches(TheiaCategoryTree tct) {
+        List<List<List<I18n>>> resultList = new ArrayList();
+        if (tct.getBroaders() != null && tct.getBroaders().size() > 0) {
+            for (TheiaCategoryTree broader : tct.getBroaders()) {
+                resultList.addAll(setCategoryBranches(broader));
+            }
+        }
+        if (resultList.size() > 0) {
+            List<List<List<I18n>>> tmpResultList = new ArrayList<>();
+            for (List<List<I18n>> list : resultList) {
+                list.add(tct.getPrefLabel());
+                tmpResultList.add(list);
+            }
+            return tmpResultList;
+        } else {
+            List<List<I18n>> tmp = new ArrayList();
+            tmp.add(tct.getPrefLabel());
+            resultList.add(tmp);
+            return resultList;
+        }
     }
 
     /**
@@ -310,6 +358,11 @@ public class ObservationsController {
     }))
             @RequestBody List<String> payload) {
         return this.observationDocumentLiteRepository.loadPopupContent(payload);
+    }
+    
+    @GetMapping("/getProducersInfo")
+    public List<Producer> getProducerInfo() {
+        return this.observationDocumentRepository.getProducersInfo();
     }
 
 }

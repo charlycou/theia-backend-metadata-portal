@@ -101,6 +101,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             .and(unwind("producer.fundings"),
                     project().and("producer.fundings.type").as("type")
                             .and("producer.fundings.acronym").as("acronym")
+                            .and("producer.fundings.idScanR").as("idScanR")
                             .and("producer.fundings.country").as("country")
                             .and(filter("producer.fundings.name").as("item")
                                     .by(valueOf("item.lang")
@@ -109,9 +110,10 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                     project("type")
                             .and(ArrayOperators.ArrayElemAt.arrayOf("name.text").elementAt(0)).as("name")
                             .and("acronym").as("acronym")
-                            .and("country").as("country"),
-                    group("type", "name", "acronym", "country").count().as("count"),
-                    project("count").and("_id.name").as("name").and("_id.acronym").as("acronym").and("_id.country").as("country").and("_id.type").as("type").andExclude("_id"),
+                            .and("country").as("country")
+                            .and("idScanR").as("idScanR"),
+                    group("type", "name", "acronym", "country", "idScanR").count().as("count"),
+                    project("count").and("_id.name").as("name").and("_id.acronym").as("acronym").and("_id.country").as("country").and("_id.idScanR").as("idScanR").and("_id.type").as("type").andExclude("_id"),
                     Aggregation.sort(Sort.Direction.ASC, "name")
             ).as("fundingNamesFacet")
             .and(unwind("dataset.metadata.portalSearchCriteria.climates"),
@@ -237,7 +239,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         List<TheiaCategoryTree> categoryTrees = new ArrayList<>();
         Set<TheiaVariable> theiaVariablesTmp = new HashSet<>();
         facetClassificationTmp.getTheiaCategorieFacetElements().stream().filter((t) -> {
-            return t.getBroaders().contains("https://w3id.org/ozcar-theia/variableCategories"); //To change body of generated lambdas, choose Tools | Templates.
+            return t.getBroaders().contains("https://w3id.org/ozcar-theia/variableCategories");
         }).forEach((t) -> {
             /**
              * Recursivly build the category tree
@@ -326,7 +328,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         aggregationOperationsPage.add(limit(pageable.getPageSize()));
         AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
         List<ObservationDocumentLite> result = mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperationsPage)
-                .withOptions(options), "observationsLite", ObservationDocumentLite.class).getMappedResults();
+                .withOptions(options), "observationsLite", ObservationDocumentLite.class
+        ).getMappedResults();
         return new PageImpl<>(result, pageable, result.size());
     }
 
@@ -520,11 +523,11 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                     Criteria.where("name").elemMatch(
                             Criteria.where("lang").is("en").and("text").is(item)))));
         });
-        jsonQueryElement.getJSONArray("fundingAcronyms").forEach(item -> {
-            aggregationOperations.add(match(Criteria.where("producer.fundings").elemMatch(
-                    Criteria.where("acronym").elemMatch(
-                            Criteria.where("lang").is("en").and("text").is(item)))));
-        });
+//        jsonQueryElement.getJSONArray("fundingAcronyms").forEach(item -> {
+//            aggregationOperations.add(match(Criteria.where("producer.fundings").elemMatch(
+//                    Criteria.where("acronym").elemMatch(
+//                            Criteria.where("lang").is("en").and("text").is(item)))));
+//        });
         return aggregationOperations;
     }
 
@@ -543,7 +546,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         });
         //Query the "observationsLite" collection using the newly created documentIds Set object
         List<PopupDocument> result = mongoTemplate.aggregate(Aggregation.newAggregation(
-                match(Criteria.where("observations.observationId").in(observationIdsFromMarker))), "observationsLite", PopupDocument.class).getMappedResults();
+                match(Criteria.where("observations.observationId").in(observationIdsFromMarker))), "observationsLite", PopupDocument.class
+        ).getMappedResults();
 
         //Set the PopupContent Object to be returned
         PopupContent popupContent = new PopupContent();
@@ -641,7 +645,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         }
         ProjectionOperation p1 = Aggregation.project().and("observations.observedProperty.theiaVariable").as("theiaVariable");
         ReplaceRootOperation rp1 = Aggregation.replaceRoot().withValueOf(ArrayOperators.ArrayElemAt.arrayOf("theiaVariable").elementAt(0));
-        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, rp1), "observationsLite", TheiaVariable.class).getMappedResults();
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, rp1), "observationsLite", TheiaVariable.class
+        ).getMappedResults();
     }
 
     /**
@@ -657,7 +662,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         andCriteria.andOperator(Criteria.where("dataset.datasetId").is(datasetId));
         MatchOperation m1 = Aggregation.match(andCriteria);
         ProjectionOperation p1 = Aggregation.project().and("observations").as("observations");
-        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1), "observationsLite", Document.class).getMappedResults();
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1), "observationsLite", Document.class
+        ).getMappedResults();
     }
 
     /**
@@ -715,8 +721,10 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         UnwindOperation u1 = Aggregation.unwind("observations");
         GroupOperation g1 = Aggregation.group().push("observations.observationId").as("observationId");
         ProjectionOperation p1 = Aggregation.project("observationId").andExclude("_id");
-        Document doc = mongoTemplate.aggregate(Aggregation.newAggregation(m1, u1, g1, p1), "observationsLite", Document.class).getUniqueMappedResult();
-        return doc.get("observationId", List.class);
+        Document doc = mongoTemplate.aggregate(Aggregation.newAggregation(m1, u1, g1, p1), "observationsLite", Document.class
+        ).getUniqueMappedResult();
+        return doc.get("observationId", List.class
+        );
     }
 
     /**

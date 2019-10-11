@@ -6,6 +6,10 @@
 package fr.theia_land.in_situ.dataportal.DAO;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.producer.Producer;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryTree;
+import java.util.List;
+import org.bson.Document;
 
 /**
  * Interface for custom method definition
@@ -14,4 +18,7 @@ public interface CustomObservationDocumentRepository {
 
     SpatialExtent findDatasetSpatialExtent(String datasetId);
     
+    List<TheiaCategoryTree> getCategoryHierarchies(List<String> uri);
+    
+    List<Producer> getProducersInfo() ;
 }

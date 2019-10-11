@@ -35,7 +35,17 @@ public class Producer {
      * Short description of the Producer
      */
     private List<I18n> description;
+    
+    /**
+     * Short description of the objectives of the producer
+     */
+    private List<I18n> objectives;
+    /**
+     * Short descruiption of the variables measured by the producer
+     */
+    private List<I18n> measuredVariables;
 
+    
     /**
      * Mail adresse for the Producer
      */
@@ -118,14 +128,32 @@ public class Producer {
         this.onlineResource = onlineResource;
     }
 
-    @Override
-    public String toString() {
-        String tmp = "{ " + this.name.toString() + ", " + this.description.toString() + ", " + this.title.toString();
-        for (Contact c : contacts) {
-            tmp = tmp + ", " + c.toString();
-        }
-        tmp = tmp + " }";
-        return tmp;
+    public List<I18n> getObjectives() {
+        return objectives;
     }
+
+    public void setObjectives(List<I18n> objectives) {
+        this.objectives = objectives;
+    }
+
+    public List<I18n> getMeasuredVariables() {
+        return measuredVariables;
+    }
+
+    public void setMeasuredVariables(List<I18n> measuredVariables) {
+        this.measuredVariables = measuredVariables;
+    }
+    
+    
+
+//    @Override
+//    public String toString() {
+//        String tmp = "{ " + this.name.toString() + ", " + this.description.toString() + ", " + this.title.toString();
+//        for (Contact c : contacts) {
+//            tmp = tmp + ", " + c.toString();
+//        }
+//        tmp = tmp + " }";
+//        return tmp;
+//    }
 
 }

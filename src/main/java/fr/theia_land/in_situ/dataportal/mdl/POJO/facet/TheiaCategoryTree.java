@@ -16,23 +16,32 @@ import java.util.stream.Collectors;
  * @author coussotc
  */
 public class TheiaCategoryTree {
+
     private String uri;
     private List<I18n> prefLabel;
     private int count;
     private List<TheiaCategoryTree> narrowers;
+    private List<TheiaCategoryTree> broaders;
     private List<TheiaVariable> theiaVariables;
 
     private TheiaCategoryTree() {
     }
-    
-    
 
     public static TheiaCategoryTree withNarrowers(String uri, List<I18n> prefLabel, Set<TheiaCategoryTree> narrowers, int count) {
+        TheiaCategoryTree hierarchy = new TheiaCategoryTree();
+        hierarchy.setUri(uri);
+        hierarchy.setPrefLabel(prefLabel);
+        hierarchy.setCount(count);
+        hierarchy.setNarrowers(narrowers.stream().sorted((object1, object2) -> object1.getUri().compareTo(object2.getUri())).collect(Collectors.toList()));
+        return hierarchy;
+    }
+
+    public static TheiaCategoryTree withBroaders(String uri, List<I18n> prefLabel, Set<TheiaCategoryTree> broaders, int count) {
         TheiaCategoryTree hierarchy = new TheiaCategoryTree();
         hierarchy.setUri(uri);;
         hierarchy.setPrefLabel(prefLabel);
         hierarchy.setCount(count);
-        hierarchy.setNarrowers(narrowers.stream().sorted((object1, object2) -> object1.getUri().compareTo(object2.getUri())).collect(Collectors.toList()));
+        hierarchy.setBroaders(broaders.stream().sorted((object1, object2) -> object1.getUri().compareTo(object2.getUri())).collect(Collectors.toList()));
         return hierarchy;
     }
 
@@ -44,10 +53,6 @@ public class TheiaCategoryTree {
         hierarchy.setTheiaVariables(theiaVariables.stream().sorted((object1, object2) -> object1.getUri().compareTo(object2.getUri())).collect(Collectors.toList()));
         return hierarchy;
     }
-    
-    
-    
-    
 
     public String getUri() {
         return uri;
@@ -71,6 +76,14 @@ public class TheiaCategoryTree {
 
     public void setNarrowers(List<TheiaCategoryTree> narrowers) {
         this.narrowers = narrowers;
+    }
+
+    public List<TheiaCategoryTree> getBroaders() {
+        return broaders;
+    }
+
+    public void setBroaders(List<TheiaCategoryTree> broaders) {
+        this.broaders = broaders;
     }
 
     public List<TheiaVariable> getTheiaVariables() {

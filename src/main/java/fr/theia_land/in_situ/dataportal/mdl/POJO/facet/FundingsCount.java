@@ -13,7 +13,7 @@ import java.util.List;
  * @author coussotc
  */
 public class FundingsCount {
-    private String name, acronym, type;
+    private String name, acronym, type, idScanR;
     private List<I18n> country;
     private int count;
 
@@ -55,10 +55,14 @@ public class FundingsCount {
 
     public void setCountry(List<I18n> country) {
         this.country = country;
+    }   
+
+    public String getIdScanR() {
+        return idScanR;
     }
 
-    
-    
-    
+    public void setIdScanR(String idScanR) {
+        this.idScanR = idScanR;
+    }
     
 }
