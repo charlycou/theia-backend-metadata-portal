@@ -502,27 +502,50 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         /**
          * Match operation for each bucket element query parameters
          */
-        jsonQueryElement.getJSONArray("climates").forEach(item -> {
+        if (jsonQueryElement.getJSONArray("climates").length() > 0) {
+            List<Criteria> climateCriterias = new ArrayList<>();
+            jsonQueryElement.getJSONArray("climates").forEach(item -> {
+                climateCriterias.add(Criteria.where("dataset.metadata.portalSearchCriteria.climates")
+                        .is(item));
+            });
             aggregationOperations.add(
-                    Aggregation.match(
-                            Criteria.where("dataset.metadata.portalSearchCriteria.climates")
-                                    .is(item)));
-        });
-        jsonQueryElement.getJSONArray("geologies").forEach(item -> {
+                    Aggregation.match(new Criteria().orOperator(climateCriterias.toArray(new Criteria[climateCriterias.size()]))
+                    ));
+        }
+
+        if (jsonQueryElement.getJSONArray("geologies").length() > 0) {
+            List<Criteria> geologyCriterias = new ArrayList<>();
+            jsonQueryElement.getJSONArray("geologies").forEach(item -> {
+                geologyCriterias.add(Criteria.where("dataset.metadata.portalSearchCriteria.geologies")
+                        .is(item));
+            });
             aggregationOperations.add(
-                    Aggregation.match(
-                            Criteria.where("dataset.metadata.portalSearchCriteria.geologies")
-                                    .is(item)));
-        });
-        jsonQueryElement.getJSONArray("producerNames").forEach(item -> {
-            aggregationOperations.add(match(Criteria.where("producer.name").elemMatch(
-                    Criteria.where("lang").is("en").and("text").is(item))));
-        });
-        jsonQueryElement.getJSONArray("fundingNames").forEach(item -> {
-            aggregationOperations.add(match(Criteria.where("producer.fundings").elemMatch(
-                    Criteria.where("name").elemMatch(
-                            Criteria.where("lang").is("en").and("text").is(item)))));
-        });
+                    Aggregation.match(new Criteria().orOperator(geologyCriterias.toArray(new Criteria[geologyCriterias.size()]))
+                    ));
+        }
+
+        if (jsonQueryElement.getJSONArray("producerNames").length() > 0) {
+            List<Criteria> producerCriterias = new ArrayList<>();
+            jsonQueryElement.getJSONArray("producerNames").forEach(item -> {
+                producerCriterias.add(Criteria.where("producer.name").elemMatch(
+                        Criteria.where("lang").is("en").and("text").is(item)));
+            });
+            aggregationOperations.add(
+                    Aggregation.match(new Criteria().orOperator(producerCriterias.toArray(new Criteria[producerCriterias.size()]))
+                    ));
+        }
+
+        if (jsonQueryElement.getJSONArray("fundingNames").length() > 0) {
+            List<Criteria> fundingCriterias = new ArrayList<>();
+            jsonQueryElement.getJSONArray("fundingNames").forEach(item -> {
+                fundingCriterias.add(Criteria.where("producer.fundings").elemMatch(
+                        Criteria.where("name").elemMatch(
+                                Criteria.where("lang").is("en").and("text").is(item))));
+            });
+            aggregationOperations.add(
+                    Aggregation.match(new Criteria().orOperator(fundingCriterias.toArray(new Criteria[fundingCriterias.size()]))
+                    ));
+        }
 //        jsonQueryElement.getJSONArray("fundingAcronyms").forEach(item -> {
 //            aggregationOperations.add(match(Criteria.where("producer.fundings").elemMatch(
 //                    Criteria.where("acronym").elemMatch(
