@@ -51,6 +51,7 @@ import org.springframework.data.mongodb.core.aggregation.AggregationOptions;
 import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import static org.springframework.data.mongodb.core.aggregation.ArrayOperators.Filter.filter;
 import static org.springframework.data.mongodb.core.aggregation.ComparisonOperators.Eq.valueOf;
+import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
 import org.springframework.data.mongodb.core.aggregation.FacetOperation;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
@@ -323,7 +324,9 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
     public Page<ObservationDocumentLite> getObservationsPage(List<AggregationOperation> aggregationOperations, Pageable pageable) {
         //Add aggregationOperation to pipeline to set pagination
         List<AggregationOperation> aggregationOperationsPage = new ArrayList(aggregationOperations);
-        aggregationOperationsPage.add(Aggregation.sort(Sort.by(Sort.Order.desc("textScore"))).and(Sort.by(Sort.Order.asc("theiaVariableEn"))));
+        aggregationOperationsPage.add(Aggregation.project("observations", "dataset", "producer", "producerVariableEn", "textScore").and(ConditionalOperators.ifNull("theiaVariableEn").then("zzzzz")).as("theiaVariableEn"));
+        aggregationOperationsPage.add(Aggregation.sort(Sort.by(Sort.Order.desc("textScore"))).and(Sort.by(Sort.Order.asc("theiaVariableEn"))).and(Sort.by(Sort.Order.asc("producerVariableEn"))));
+        aggregationOperationsPage.add(Aggregation.project("observations", "dataset", "producer", "textScore").and(ConditionalOperators.when(Criteria.where("theiaVariableEn").is("zzzzz")).then("$$REMOVE").otherwiseValueOf("theiaVariableEn")).as("theiaVariableEn"));
         aggregationOperationsPage.add(skip((long) pageable.getPageNumber() * pageable.getPageSize()));
         aggregationOperationsPage.add(limit(pageable.getPageSize()));
         AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
@@ -373,10 +376,14 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         aggregationOperations.add(u1);
 
         /**
-         * Add the fileds TheiaVariableEn after the unwind operation. This field will be used to sort the result
-         * document by alphabetical order at the end of the aggregation operation.
+         * Add the fields "theiaVariableEn" and "producerVariableEn" after the unwind operation. This field will be used
+         * to sort the result document by alphabetical order at the end of the aggregation operation.
          */
         aggregationOperations.add(new GenericAggregationOperation("$addFields", "{ \"theiaVariableEn\" : { \"$filter\" : { \"input\" : \"$observations.observedProperty.theiaVariable.prefLabel\" , \"as\" : \"var\" , \"cond\" : { \"$eq\":[\"$$var.lang\", \"en\"]}}}}"));
+        aggregationOperations.add(new GenericAggregationOperation("$addFields", "{ \"producerVariableEn\" : { \"$filter\" : { \"input\" : \"$observations.observedProperty.name\" , \"as\" : \"var\" , \"cond\" : { \"$eq\":[\"$$var.lang\", \"en\"]}}}}"));
+        aggregationOperations.add(Aggregation.project("_id", "observations", "dataset", "producer", "textScore")
+                .and(ArrayOperators.ArrayElemAt.arrayOf("theiaVariableEn.text").elementAt(0)).as("theiaVariableEn")
+                .and(ArrayOperators.ArrayElemAt.arrayOf("producerVariableEn.text").elementAt(0)).as("producerVariableEn"));
 
         /**
          * 2 - MatchOperations stage Match operation for the temporal extent parameters Document will not be returned
@@ -493,7 +500,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                 .first("producer").as("producer")
                 .first("dataset").as("dataset")
                 .first("textScore").as("textScore")
-                .first("theiaVariableEn").as("theiaVariableEn");
+                .first("theiaVariableEn").as("theiaVariableEn")
+                .first("producerVariableEn").as("producerVariableEn");
         aggregationOperations.add(g1);
 
         /**
