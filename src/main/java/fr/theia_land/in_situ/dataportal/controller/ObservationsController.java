@@ -309,7 +309,7 @@ public class ObservationsController {
     @ApiOperation(value = "Initialize the facet elements",
             notes = "The facet elements and their count are calculated over the entire 'ObservationsLite' collection",
             response = FacetClassification.class)
-    @PostMapping("/initFacets")
+    @GetMapping("/initFacets")
     public FacetClassification initFacets() {
         return this.observationDocumentLiteRepository.initFacets();
     }
