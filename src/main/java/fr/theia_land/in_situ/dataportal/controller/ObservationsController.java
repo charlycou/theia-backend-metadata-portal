@@ -46,7 +46,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  */
 @RestController
 @RequestMapping("/observation")
-@CrossOrigin(origins = "${app.api_host}", methods = {RequestMethod.OPTIONS, RequestMethod.GET, RequestMethod.HEAD, RequestMethod.POST},allowedHeaders = "*")
+@CrossOrigin(origins = "*", methods = {RequestMethod.OPTIONS, RequestMethod.GET, RequestMethod.HEAD, RequestMethod.POST},allowedHeaders = "*")
 public class ObservationsController {
 
     /**
