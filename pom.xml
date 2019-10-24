@@ -41,6 +41,13 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <version>2.1.0.RELEASE</version>
         </dependency>
+        
+                
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
@@ -89,6 +96,12 @@
             <version>2.8.5</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>5.1.5.RELEASE</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -101,7 +114,7 @@
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
                 <version>1.0.0</version>
-<!--                <configuration>
+                <!--                <configuration>
                     <to>
                         <image>registry.hub.docker.com/charlycou/springboot-dataportal-image:latest</image>
                     </to>
