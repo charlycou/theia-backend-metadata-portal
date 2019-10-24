@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 /**
  *
@@ -45,7 +46,7 @@ import org.springframework.web.bind.annotation.PathVariable;
  */
 @RestController
 @RequestMapping("/observation")
-@CrossOrigin(origins = "${app.api_host}")
+@CrossOrigin(origins = "${app.api_host}", methods = {RequestMethod.OPTIONS, RequestMethod.GET, RequestMethod.HEAD, RequestMethod.POST})
 //@CrossOrigin("*")
 public class ObservationsController {
 
