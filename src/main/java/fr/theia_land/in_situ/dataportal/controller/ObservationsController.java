@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.PathVariable;
  */
 @RestController
 @RequestMapping("/observation")
-@CrossOrigin(origins = "${app.api_host}")
+@CrossOrigin(origins = "*")
 public class ObservationsController {
 
     /**
