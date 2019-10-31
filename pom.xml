@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.theia_land.in_situ</groupId>
-    <artifactId>dataportal</artifactId>
+    <artifactId>backend-springboot-metadata-portal</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>dataportal</name>
+    <name>backend-springboot-metadata-portal</name>
     <description>Demo project for Spring Boot</description>
 
     <parent>
