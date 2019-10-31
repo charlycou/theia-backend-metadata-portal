@@ -7,7 +7,7 @@ build_dataportal_commit:
   stage: build
   only:
     variables:
-      - $CI_COMMIT_MESSAGE =~ ^(feat|fix|test)
+      - $CI_COMMIT_MESSAGE =~ /^(feat|fix|test)/
   except:
     - tags
   script:
