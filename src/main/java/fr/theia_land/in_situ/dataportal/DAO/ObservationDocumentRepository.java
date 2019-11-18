@@ -23,4 +23,6 @@ public interface ObservationDocumentRepository extends MongoRepository<Observati
      * @return ObservationDocument.class
      */
     ObservationDocument findByDocumentId(String documentIds);
+    
+//    List<Producer> findDistinctProducerByProducerProducerId(String producerId);
 }

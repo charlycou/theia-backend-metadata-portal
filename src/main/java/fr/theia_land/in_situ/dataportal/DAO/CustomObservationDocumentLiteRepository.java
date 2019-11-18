@@ -36,4 +36,8 @@ public interface CustomObservationDocumentLiteRepository {
     
     public List<String> getObservationIdsOfOtherTheiaVariableAtLocation(String queryFilter);
     
+    public  List<AggregationOperation> setMatchOperationUsingFilters(String queryElements, String groupOperationTarget);
+    
+    public List<String> getDatasetOrProducerIds(List<AggregationOperation> aggregationOperations);
+    
 }

@@ -155,7 +155,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
          * Aggregation pipeline to be executed to find the observation matching the query in "observationsLite"
          * collection.
          */
-        List<AggregationOperation> aggregationOperations = setMatchOperationUsingFilters(queryElements);
+        List<AggregationOperation> aggregationOperations = setMatchOperationUsingFilters(queryElements, null);
 
         /**
          * The aggregation pipeline is executed to obtain the list of ObservationLiteDocument corresponding to the
@@ -340,9 +340,12 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
      * Method used to parse the String containing the filters into aggregation operation
      *
      * @param queryElements String that can be parsed into json object.
+     * @param groupOperationTarget String extra group operation target speciying if a group operation need to be
+     * performed on "producer" or "dataset" objects
      * @return List of AggregationOperation composed of MatchOperation of each filter of the queryElements parameter
      */
-    public static List<AggregationOperation> setMatchOperationUsingFilters(String queryElements) {
+    @Override
+    public List<AggregationOperation> setMatchOperationUsingFilters(String queryElements, String groupOperationTarget) {
         //Aggregation pipeline to be executed to find the observation matching the query
         List<AggregationOperation> aggregationOperations = new ArrayList<>();
 
@@ -553,6 +556,21 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             aggregationOperations.add(
                     Aggregation.match(new Criteria().orOperator(fundingCriterias.toArray(new Criteria[fundingCriterias.size()]))
                     ));
+        }
+
+        if (groupOperationTarget != null) {
+            switch (groupOperationTarget) {
+                case "producer":
+                    aggregationOperations.add(Aggregation.group("producer.producerId"));
+                    break;
+                case "dataset":
+                    aggregationOperations.add(Aggregation.group("dataset.datasetId"));
+                    break;
+                case "samplingFeature":
+                    break;
+                default:
+                    break;
+            }
         }
 //        jsonQueryElement.getJSONArray("fundingAcronyms").forEach(item -> {
 //            aggregationOperations.add(match(Criteria.where("producer.fundings").elemMatch(
@@ -774,5 +792,21 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                 latLngs.add(intList.toArray(intArray));
             }
         }
+    }
+
+    /**
+     * Methods to get producer id from "observationsLite" collection in order to query the producer from "observations"
+     * collection
+     *
+     * @param aggregationOperations AggregationOperation to be performed fro the query. Result from user selected
+     * filters
+     * @return List ot String
+     */
+    @Override
+    public List<String> getDatasetOrProducerIds(List<AggregationOperation> aggregationOperations) {
+        return mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations), "observationsLite", Document.class).getMappedResults()
+                .stream().map((t) -> {
+                    return t.get("_id", String.class);
+                }).collect(Collectors.toList());
     }
 }

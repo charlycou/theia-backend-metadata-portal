@@ -9,11 +9,17 @@ import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.producer.Producer;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryFacetElement;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryTree;
+import fr.theia_land.in_situ.dataportal.model.ObservationDocument;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
@@ -22,6 +28,8 @@ import org.springframework.data.mongodb.core.aggregation.LimitOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
 import org.springframework.data.mongodb.core.aggregation.ReplaceRootOperation;
+import org.springframework.data.mongodb.core.aggregation.SkipOperation;
+import org.springframework.data.mongodb.core.aggregation.SortOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 
 /**
@@ -94,6 +102,11 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
         return broaders;
     }
 
+    /**
+     * Method to get each producer information. To be displayed in producer facet search
+     *
+     * @return List of Producer
+     */
     @Override
     public List<Producer> getProducersInfo() {
         ProjectionOperation p1 = Aggregation.project()
@@ -115,5 +128,83 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
                 .and(ArrayOperators.ArrayElemAt.arrayOf("name").elementAt(0)).as("name");
         List<Producer> producers = mongoTemplate.aggregate(Aggregation.newAggregation(p1, g1, p2), "observations", Producer.class).getMappedResults();
         return producers;
+    }
+
+    @Override
+    public Page<Producer> getProducersPage(List<String> producerIds, Pageable pageable) {
+        MatchOperation m1 = Aggregation.match(Criteria.where("producer.producerId").in(producerIds));
+        ProjectionOperation p1 = Aggregation.project()
+                .and("producer.producerId").as("producerId")
+                .and("producer.name").as("name")
+                .and("producer.description").as("description")
+                .and("producer.objectives").as("objectives")
+                .and("producer.measuredVariables").as("measuredVariables")
+                .and("producer.title").as("title");
+        GroupOperation g1 = Aggregation.group("producerId")
+                .addToSet("description").as("description")
+                .addToSet("objectives").as("objectives")
+                .addToSet("measuredVariables").as("measuredVariables")
+                .addToSet("title").as("title")
+                .addToSet("name").as("name");
+        ProjectionOperation p2 = Aggregation.project()
+                .and("_id").as("producerId").andExclude("_id")
+                .and(ArrayOperators.ArrayElemAt.arrayOf("description").elementAt(0)).as("description")
+                .and(ArrayOperators.ArrayElemAt.arrayOf("objectives").elementAt(0)).as("objectives")
+                .and(ArrayOperators.ArrayElemAt.arrayOf("measuredVariables").elementAt(0)).as("measuredVariables")
+                .and(ArrayOperators.ArrayElemAt.arrayOf("name").elementAt(0)).as("name");
+        SortOperation s1 = Aggregation.sort(Sort.by(Sort.Order.asc("name")));
+        SkipOperation sk1 = Aggregation.skip((long) pageable.getPageNumber() * pageable.getPageSize());
+        LimitOperation l1 = Aggregation.limit(pageable.getPageSize());
+        int resultSize = mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1), "observations", Document.class).getMappedResults().size();
+        List<Producer> producers = mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1, p2, s1, sk1, l1), "observations", Producer.class).getMappedResults();
+        return new PageImpl<>(producers, pageable, resultSize);
+    }
+
+    @Override
+    public Page<Document> getDatasetsPage(List<String> datasetIds, Pageable pageable) {
+        MatchOperation m1 = Aggregation.match(Criteria.where("dataset.datasetId").in(datasetIds));
+        ProjectionOperation p1 = Aggregation.project()
+                .and("producer.producerId").as("producerId")
+                .and("producer.name").as("producerName")
+                .and("dataset.datasetId").as("datasetId")
+                .and("dataset.metadata.title").as("title")
+                .and("dataset.metadata.description").as("description")
+                .and("dataset.metadata.objective").as("objective")
+                .and("dataset.metadata.temporalExtent").as("temporalExtent")
+                .and("dataset.metadata.spatialExtent").as("spatialExtent")
+                .and("dataset.metadata.keywords").as("keywords");
+        GroupOperation g1 = Aggregation.group("datasetId")
+                .first("producerName").as("producerName")
+                .first("producerId").as("producerId")
+                .first("title").as("title")
+                .first("description").as("description")
+                .first("objective").as("objective")
+                .first("temporalExtent").as("temporalExtent")
+                .first("spatialExtent").as("spatialExtent")
+                .first("keywords").as("keywords");
+        ProjectionOperation p2 = Aggregation.project("producerId","producerName","title", "description", "objective", "temporalExtent", "spatialExtent", "keywords")
+                .and("_id").as("datasetId").andExclude("_id");
+        SortOperation s1 = Aggregation.sort(Sort.by(Sort.Order.asc("title")));
+        SkipOperation sk1 = Aggregation.skip((long) pageable.getPageNumber() * pageable.getPageSize());
+        LimitOperation l1 = Aggregation.limit(pageable.getPageSize());
+        int resultSize = mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1), "observations", Document.class).getMappedResults().size();
+        List<Document> datasets = mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1, p2, s1, sk1, l1), "observations", Document.class).getMappedResults();
+        return new PageImpl<>(datasets, pageable, resultSize);
+    }
+
+    @Override
+    public Producer getProducerDetailed(String producerId) {
+        MatchOperation m1 = Aggregation.match(Criteria.where("producer.producerId").is(producerId));
+        ProjectionOperation p1 = Aggregation.project("producer");
+        GroupOperation g1 = Aggregation.group("producer");
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1), "observations", Producer.class).getUniqueMappedResult();
+    }
+    
+        @Override
+    public ObservationDocument getDatasetDetailed(String datasetId) {
+        MatchOperation m1 = Aggregation.match(Criteria.where("dataset.datasetId").is(datasetId));
+        ProjectionOperation p1 = Aggregation.project("producer","dataset");
+        GroupOperation g1 = Aggregation.group("producer","dataset");
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1), "observations", ObservationDocument.class).getUniqueMappedResult();
     }
 }

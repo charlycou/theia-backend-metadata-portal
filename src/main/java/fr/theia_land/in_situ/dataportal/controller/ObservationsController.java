@@ -5,7 +5,6 @@
  */
 package fr.theia_land.in_situ.dataportal.controller;
 
-import fr.theia_land.in_situ.dataportal.DAO.CustomObservationDocumentLiteRepositoryImpl;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentRepository;
@@ -23,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentLiteRepository;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.Observation;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.producer.Producer;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
@@ -170,6 +170,7 @@ public class ObservationsController {
 
     /**
      * Find the category branches to be printed in info-panel for a list of category
+     *
      * @param payload list of uri of the theia categories
      * @return List of List of List of I18n corresponding to the prefLabel of each Theia categories concept
      */
@@ -332,8 +333,8 @@ public class ObservationsController {
     }))
             @RequestBody String payload) {
         JSONObject jsonPayload = new JSONObject(payload);
-        return this.observationDocumentLiteRepository.getObservationsPage(CustomObservationDocumentLiteRepositoryImpl
-                .setMatchOperationUsingFilters(jsonPayload.getJSONObject("filters").toString()),
+        return this.observationDocumentLiteRepository.getObservationsPage(
+                this.observationDocumentLiteRepository.setMatchOperationUsingFilters(jsonPayload.getJSONObject("filters").toString(), null),
                 PageRequest.of(jsonPayload.getInt("pageSelected") - 1,
                         jsonPayload.getInt("pageSize")));
     }
@@ -358,10 +359,79 @@ public class ObservationsController {
             @RequestBody List<String> payload) {
         return this.observationDocumentLiteRepository.loadPopupContent(payload);
     }
-    
+
+    /**
+     * Methods used to load information of all the producer in order to have a little description about each producer in
+     * the producer facet
+     *
+     * @return List of Producer object
+     */
+    @ApiOperation(value = "Load information about each producer",
+            notes = "Document are queried from the 'observations' collection",
+            response = Producer.class,
+            responseContainer = "List"
+    )
     @GetMapping("/getProducersInfo")
     public List<Producer> getProducerInfo() {
         return this.observationDocumentRepository.getProducersInfo();
+    }
+
+    @ApiOperation(value = "Load detailed information about one producer",
+            notes = "Document are queried from the 'observations' collection",
+            response = Producer.class
+    )
+    @GetMapping("showProducerDetailed/{producerId}")
+    public Producer showProducerDetailed(
+            @ApiParam(required = true,
+                    value = "Example (quotes inside brackets can be badly escaped by UI...):\n KARS",
+                    example = "KARS")
+            @PathVariable String producerId) {
+        return this.observationDocumentRepository.getProducerDetailed(producerId);
+
+    }
+    
+        @ApiOperation(value = "Load detailed information about one producer",
+            notes = "Document are queried from the 'observations' collection",
+            response = Producer.class
+    )
+    @GetMapping("showDatasetDetailed/{producerId}")
+    public ObservationDocument showDatasetDetailed(
+            @ApiParam(required = true,
+                    value = "Example (quotes inside brackets can be badly escaped by UI...):\n KARS",
+                    example = "KARS")
+            @PathVariable String producerId) {
+        return this.observationDocumentRepository.getDatasetDetailed(producerId);
+
+    }
+
+
+    @PostMapping("changeProducerPage")
+    public Page<Producer> getProducerPage(@ApiParam(required = true,
+            value = "Example (quotes inside brackets can be badly escaped by UI...):\n {\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}",
+            examples = @Example(value = {
+        @ExampleProperty(value = "{\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}")
+    }))
+            @RequestBody String payload) {
+        JSONObject jsonPayload = new JSONObject(payload);
+        List<String> producerIds = this.observationDocumentLiteRepository.getDatasetOrProducerIds(
+                this.observationDocumentLiteRepository.setMatchOperationUsingFilters(jsonPayload.getJSONObject("filters").toString(), "producer"));
+        return this.observationDocumentRepository.getProducersPage(producerIds, PageRequest.of(jsonPayload.getInt("pageSelected") - 1,
+                jsonPayload.getInt("pageSize")));
+
+    }
+
+    @PostMapping("changeDatasetPage")
+    public Page<Document> getDatastetPage(@ApiParam(required = true,
+            value = "Example (quotes inside brackets can be badly escaped by UI...):\n {\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}",
+            examples = @Example(value = {
+        @ExampleProperty(value = "{\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}")
+    }))
+            @RequestBody String payload) {
+        JSONObject jsonPayload = new JSONObject(payload);
+        List<String> datasetIds = this.observationDocumentLiteRepository.getDatasetOrProducerIds(
+                this.observationDocumentLiteRepository.setMatchOperationUsingFilters(jsonPayload.getJSONObject("filters").toString(), "dataset"));
+        return this.observationDocumentRepository.getDatasetsPage(datasetIds, PageRequest.of(jsonPayload.getInt("pageSelected") - 1,
+                jsonPayload.getInt("pageSize")));
     }
 
 }
