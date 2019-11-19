@@ -694,7 +694,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         }
         ProjectionOperation p1 = Aggregation.project().and("observations.observedProperty.theiaVariable").as("theiaVariable");
         ReplaceRootOperation rp1 = Aggregation.replaceRoot().withValueOf(ArrayOperators.ArrayElemAt.arrayOf("theiaVariable").elementAt(0));
-        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, rp1), "observationsLite", TheiaVariable.class
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, rp1).withOptions(options), "observationsLite", TheiaVariable.class
         ).getMappedResults();
     }
 
@@ -711,7 +712,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         andCriteria.andOperator(Criteria.where("dataset.datasetId").is(datasetId));
         MatchOperation m1 = Aggregation.match(andCriteria);
         ProjectionOperation p1 = Aggregation.project().and("observations").as("observations");
-        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1), "observationsLite", Document.class
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1).withOptions(options), "observationsLite", Document.class
         ).getMappedResults();
     }
 
@@ -770,7 +772,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         UnwindOperation u1 = Aggregation.unwind("observations");
         GroupOperation g1 = Aggregation.group().push("observations.observationId").as("observationId");
         ProjectionOperation p1 = Aggregation.project("observationId").andExclude("_id");
-        Document doc = mongoTemplate.aggregate(Aggregation.newAggregation(m1, u1, g1, p1), "observationsLite", Document.class
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        Document doc = mongoTemplate.aggregate(Aggregation.newAggregation(m1, u1, g1, p1).withOptions(options), "observationsLite", Document.class
         ).getUniqueMappedResult();
         return doc.get("observationId", List.class
         );
@@ -804,7 +807,8 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
      */
     @Override
     public List<String> getDatasetOrProducerIds(List<AggregationOperation> aggregationOperations) {
-        return mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations), "observationsLite", Document.class).getMappedResults()
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        return mongoTemplate.aggregate(Aggregation.newAggregation(aggregationOperations).withOptions(options), "observationsLite", Document.class).getMappedResults()
                 .stream().map((t) -> {
                     return t.get("_id", String.class);
                 }).collect(Collectors.toList());
