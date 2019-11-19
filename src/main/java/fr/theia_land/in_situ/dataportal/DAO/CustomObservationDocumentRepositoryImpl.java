@@ -130,6 +130,13 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
         return producers;
     }
 
+    /**
+     * Method to query a page of producers to diplay on list items
+     *
+     * @param producerIds List of id of the producer to be displayed
+     * @param pageable describe the page to be returned
+     * @return Page of producer
+     */
     @Override
     public Page<Producer> getProducersPage(List<String> producerIds, Pageable pageable) {
         MatchOperation m1 = Aggregation.match(Criteria.where("producer.producerId").in(producerIds));
@@ -160,6 +167,13 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
         return new PageImpl<>(producers, pageable, resultSize);
     }
 
+    /**
+     * Method to query a page of datasets to diplay on list items
+     *
+     * @param datasetIds List of id of the producer to be displayed
+     * @param pageable describe the page to be returned
+     * @return Page of dataset
+     */
     @Override
     public Page<Document> getDatasetsPage(List<String> datasetIds, Pageable pageable) {
         MatchOperation m1 = Aggregation.match(Criteria.where("dataset.datasetId").in(datasetIds));
@@ -182,7 +196,7 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
                 .first("temporalExtent").as("temporalExtent")
                 .first("spatialExtent").as("spatialExtent")
                 .first("keywords").as("keywords");
-        ProjectionOperation p2 = Aggregation.project("producerId","producerName","title", "description", "objective", "temporalExtent", "spatialExtent", "keywords")
+        ProjectionOperation p2 = Aggregation.project("producerId", "producerName", "title", "description", "objective", "temporalExtent", "spatialExtent", "keywords")
                 .and("_id").as("datasetId").andExclude("_id");
         SortOperation s1 = Aggregation.sort(Sort.by(Sort.Order.asc("title")));
         SkipOperation sk1 = Aggregation.skip((long) pageable.getPageNumber() * pageable.getPageSize());
@@ -192,6 +206,12 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
         return new PageImpl<>(datasets, pageable, resultSize);
     }
 
+    /**
+     * Get the detailed producer object to be displayed in info panel
+     *
+     * @param producerId id of hte producer to be displayed
+     * @return Producer object
+     */
     @Override
     public Producer getProducerDetailed(String producerId) {
         MatchOperation m1 = Aggregation.match(Criteria.where("producer.producerId").is(producerId));
@@ -199,12 +219,17 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
         GroupOperation g1 = Aggregation.group("producer");
         return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1), "observations", Producer.class).getUniqueMappedResult();
     }
-    
-        @Override
+
+    /**
+     * Fet the detailed dataset object to be displayed iin hte info panel
+     * @param datasetId id of the dataset
+     * @return ObservationDocument object with Producer and Dataset object properties
+     */
+    @Override
     public ObservationDocument getDatasetDetailed(String datasetId) {
         MatchOperation m1 = Aggregation.match(Criteria.where("dataset.datasetId").is(datasetId));
-        ProjectionOperation p1 = Aggregation.project("producer","dataset");
-        GroupOperation g1 = Aggregation.group("producer","dataset");
+        ProjectionOperation p1 = Aggregation.project("producer", "dataset");
+        GroupOperation g1 = Aggregation.group("producer", "dataset");
         return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1), "observations", ObservationDocument.class).getUniqueMappedResult();
     }
 }
