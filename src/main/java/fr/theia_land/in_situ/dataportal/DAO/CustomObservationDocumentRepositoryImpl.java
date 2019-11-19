@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationOptions;
 import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.LimitOperation;
@@ -126,7 +127,8 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
                 .and(ArrayOperators.ArrayElemAt.arrayOf("objectives").elementAt(0)).as("objectives")
                 .and(ArrayOperators.ArrayElemAt.arrayOf("measuredVariables").elementAt(0)).as("measuredVariables")
                 .and(ArrayOperators.ArrayElemAt.arrayOf("name").elementAt(0)).as("name");
-        List<Producer> producers = mongoTemplate.aggregate(Aggregation.newAggregation(p1, g1, p2), "observations", Producer.class).getMappedResults();
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        List<Producer> producers = mongoTemplate.aggregate(Aggregation.newAggregation(p1, g1, p2).withOptions(options), "observations", Producer.class).getMappedResults();
         return producers;
     }
 
@@ -163,7 +165,8 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
         SkipOperation sk1 = Aggregation.skip((long) pageable.getPageNumber() * pageable.getPageSize());
         LimitOperation l1 = Aggregation.limit(pageable.getPageSize());
         int resultSize = mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1), "observations", Document.class).getMappedResults().size();
-        List<Producer> producers = mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1, p2, s1, sk1, l1), "observations", Producer.class).getMappedResults();
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        List<Producer> producers = mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1, p2, s1, sk1, l1).withOptions(options), "observations", Producer.class).getMappedResults();
         return new PageImpl<>(producers, pageable, resultSize);
     }
 
@@ -202,7 +205,8 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
         SkipOperation sk1 = Aggregation.skip((long) pageable.getPageNumber() * pageable.getPageSize());
         LimitOperation l1 = Aggregation.limit(pageable.getPageSize());
         int resultSize = mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1), "observations", Document.class).getMappedResults().size();
-        List<Document> datasets = mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1, p2, s1, sk1, l1), "observations", Document.class).getMappedResults();
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        List<Document> datasets = mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1, p2, s1, sk1, l1).withOptions(options), "observations", Document.class).getMappedResults();
         return new PageImpl<>(datasets, pageable, resultSize);
     }
 
@@ -217,7 +221,8 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
         MatchOperation m1 = Aggregation.match(Criteria.where("producer.producerId").is(producerId));
         ProjectionOperation p1 = Aggregation.project("producer");
         GroupOperation g1 = Aggregation.group("producer");
-        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1), "observations", Producer.class).getUniqueMappedResult();
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1).withOptions(options), "observations", Producer.class).getUniqueMappedResult();
     }
 
     /**
@@ -230,6 +235,7 @@ public class CustomObservationDocumentRepositoryImpl implements CustomObservatio
         MatchOperation m1 = Aggregation.match(Criteria.where("dataset.datasetId").is(datasetId));
         ProjectionOperation p1 = Aggregation.project("producer", "dataset");
         GroupOperation g1 = Aggregation.group("producer", "dataset");
-        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1), "observations", ObservationDocument.class).getUniqueMappedResult();
+        AggregationOptions options = AggregationOptions.builder().allowDiskUse(true).build();
+        return mongoTemplate.aggregate(Aggregation.newAggregation(m1, p1, g1).withOptions(options), "observations", ObservationDocument.class).getUniqueMappedResult();
     }
 }
