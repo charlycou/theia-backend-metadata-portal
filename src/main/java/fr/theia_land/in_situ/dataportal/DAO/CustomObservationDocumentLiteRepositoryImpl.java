@@ -86,7 +86,9 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                             .connectFrom("broaders")
                             .connectTo("uri")
                             .as("categoryHierarchy"),
-                    project("categoryHierarchy").and("observations.observedProperty.theiaVariable").as("theiaVariable"),
+                    project("categoryHierarchy", "_id").and("observations.observedProperty.theiaVariable").as("theiaVariable"),
+                    group("_id", "theiaVariable").first("categoryHierarchy").as("categoryHierarchy"),
+                    project("categoryHierarchy").and("_id.theiaVariable").as("theiaVariable").andExclude("_id"),
                     unwind("categoryHierarchy"),
                     group("categoryHierarchy")
                             .count().as("count")
@@ -245,7 +247,13 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             /**
              * Recursivly build the category tree
              */
-            categoryTrees.add(TheiaCategoryTree.withNarrowers(t.getUri(), t.getPrefLabel(), populateNarrowers(t.getNarrowers(), facetClassificationTmp.getTheiaCategorieFacetElements()), t.getCount()));
+//            categoryTrees.add(TheiaCategoryTree.withBroadersAndNarrowers(
+//                    t.getUri(),
+//                    t.getPrefLabel(),
+//                    populateNarrowers(t.getNarrowers(), facetClassificationTmp.getTheiaCategorieFacetElements()),
+//                    populateBroaders(t.getBroaders(), facetClassificationTmp.getTheiaCategorieFacetElements()),
+//                    t.getCount()));
+             categoryTrees.add(TheiaCategoryTree.withNarrowers(t.getUri(), t.getPrefLabel(), populateNarrowers(t.getNarrowers(), facetClassificationTmp.getTheiaCategorieFacetElements()), t.getCount()));
             /**
              * Build the list of Theia variable
              */
@@ -299,6 +307,35 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
         });
         return narrowers;
     }
+
+//    /**
+//     * Recursive method to populate the broaders of TheiaCategory in order to print the category branch in the info
+//     * panel
+//     *
+//     * @param uriBroaders uri of the broaders of a given concept category
+//     * @param facetElements The list of TheiaCategoryFacetElement corresponding the cateory of the variable queried
+//     * @return Set of TheiaCategory populated with broaders
+//     */
+//    private Set<TheiaCategoryTree> populateBroaders(List<String> uriBroaders, List<TheiaCategoryFacetElement> facetElements) {
+//        //List to return
+//        Set<TheiaCategoryTree> broaders = new HashSet<>();
+//        //For each uri of the list uriBroaders, a new TheiaCategoryTree object is added to the broaders list.
+//        uriBroaders.forEach(uri -> {
+//            TheiaCategoryFacetElement facetElement = facetElements.stream().filter((t) -> {
+//                return t.getUri().equals(uri);
+//            }).findFirst().orElse(null);
+//
+//            if (facetElement != null && facetElement.getBroaders().size() > 0) {
+//                broaders.add(TheiaCategoryTree.withBroaders(
+//                        facetElement.getUri(),
+//                        facetElement.getPrefLabel(),
+//                        populateBroaders(facetElement.getBroaders(), facetElements),
+//                        facetElement.getCount()));
+//            }
+//
+//        });
+//        return broaders;
+//    }
 
     /**
      * Method to calculate the facet from the whole "observationLite" collection
@@ -558,6 +595,9 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
                     ));
         }
 
+        /**
+         * Used to filter list item according to "dataset","observation" or "producer"
+         */
         if (groupOperationTarget != null) {
             switch (groupOperationTarget) {
                 case "producer":

@@ -30,14 +30,38 @@ public class ObservationLite {
      * for which the observation is made.
      */
     private ObservedProperty observedProperty;
-
     /**
-     * Temporalextent of the observation. For
-     * result that are not time series, the date acquisition of the observation is precised. For results that are not
-     * temporal (e.g. geological map the date of acquisition of the observation is precised followed by a 31-12-9999
-     * 00:00:00
+     * Temporalextent of the observation. For result that are not time series, the date acquisition of the observation
+     * is precised. For results that are not temporal (e.g. geological map the date of acquisition of the observation is
+     * precised followed by a 31-12-9999 00:00:00
      */
     private TemporalExtent temporalExtent;
+
+    /**
+     * Data type of the observation
+     */
+    private String dataType;
+
+    /**
+     * Wheither the observation is a time serie
+     */
+    private String timeSerie;
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public String getTimeSerie() {
+        return timeSerie;
+    }
+
+    public void setTimeSerie(String timeSerie) {
+        this.timeSerie = timeSerie;
+    }
 
     public FeatureOfInterest getFeatureOfInterest() {
         return featureOfInterest;

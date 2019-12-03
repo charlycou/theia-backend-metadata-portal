@@ -44,6 +44,16 @@ public class TheiaCategoryTree {
         hierarchy.setBroaders(broaders.stream().sorted((object1, object2) -> object1.getUri().compareTo(object2.getUri())).collect(Collectors.toList()));
         return hierarchy;
     }
+    
+//        public static TheiaCategoryTree withBroadersAndNarrowers(String uri, List<I18n> prefLabel, Set<TheiaCategoryTree> narrowers, Set<TheiaCategoryTree> broaders, int count) {
+//        TheiaCategoryTree hierarchy = new TheiaCategoryTree();
+//        hierarchy.setUri(uri);;
+//        hierarchy.setPrefLabel(prefLabel);
+//        hierarchy.setCount(count);
+//        hierarchy.setNarrowers(narrowers.stream().sorted((object1, object2) -> object1.getUri().compareTo(object2.getUri())).collect(Collectors.toList()));
+//        hierarchy.setBroaders(broaders.stream().sorted((object1, object2) -> object1.getUri().compareTo(object2.getUri())).collect(Collectors.toList()));
+//        return hierarchy;
+//    }
 
     public static TheiaCategoryTree withTheiaVariables(String uri, List<I18n> prefLabel, Set<TheiaVariable> theiaVariables, int count) {
         TheiaCategoryTree hierarchy = new TheiaCategoryTree();
