@@ -253,7 +253,7 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
 //                    populateNarrowers(t.getNarrowers(), facetClassificationTmp.getTheiaCategorieFacetElements()),
 //                    populateBroaders(t.getBroaders(), facetClassificationTmp.getTheiaCategorieFacetElements()),
 //                    t.getCount()));
-             categoryTrees.add(TheiaCategoryTree.withNarrowers(t.getUri(), t.getPrefLabel(), populateNarrowers(t.getNarrowers(), facetClassificationTmp.getTheiaCategorieFacetElements()), t.getCount()));
+            categoryTrees.add(TheiaCategoryTree.withNarrowers(t.getUri(), t.getPrefLabel(), populateNarrowers(t.getNarrowers(), facetClassificationTmp.getTheiaCategorieFacetElements()), t.getCount()));
             /**
              * Build the list of Theia variable
              */
@@ -336,7 +336,6 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
 //        });
 //        return broaders;
 //    }
-
     /**
      * Method to calculate the facet from the whole "observationLite" collection
      *
@@ -437,8 +436,14 @@ public class CustomObservationDocumentLiteRepositoryImpl implements CustomObserv
             List<Criteria> temporalExtentCriterias = new ArrayList<>();
             jsonQueryElement.getJSONArray("temporalExtents").forEach(item -> {
                 JSONObject tmpExtent = (JSONObject) item;
-                Instant from = Instant.parse(tmpExtent.getString("fromDate"));
-                Instant to = Instant.parse(tmpExtent.getString("toDate"));
+                Instant from = Instant.parse("1900-01-01T01:00:00.000Z");
+                Instant to = Instant.now();
+                if (!tmpExtent.isNull("fromDate")) {
+                    from = Instant.parse(tmpExtent.getString("fromDate"));
+                }
+                if (!tmpExtent.isNull("toDate")) {
+                    to = Instant.parse(tmpExtent.getString("toDate"));
+                }
                 temporalExtentCriterias.add(
                         new Criteria().orOperator(
                                 new Criteria().andOperator(
