@@ -5,18 +5,18 @@
  */
 package fr.theia_land.in_situ.dataportal.config.Converters;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.SamplingFeature;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.SamplingGeometry;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.SamplingSpecimen;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.GeometryGeoJSON;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.LineString;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.MultiLineString;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.MultiPoint;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.MultiPolygon;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.Point;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.Polygon;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.Properties;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.I18n;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.SamplingFeature;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.SamplingGeometry;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.SamplingSpecimen;
+import fr.theia_land.in_situ.dataportal.model.POJO.geometry.GeometryGeoJSON;
+import fr.theia_land.in_situ.dataportal.model.POJO.geometry.LineString;
+import fr.theia_land.in_situ.dataportal.model.POJO.geometry.MultiLineString;
+import fr.theia_land.in_situ.dataportal.model.POJO.geometry.MultiPoint;
+import fr.theia_land.in_situ.dataportal.model.POJO.geometry.MultiPolygon;
+import fr.theia_land.in_situ.dataportal.model.POJO.geometry.Point;
+import fr.theia_land.in_situ.dataportal.model.POJO.geometry.Polygon;
+import fr.theia_land.in_situ.dataportal.model.POJO.geometry.Properties;
 import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;

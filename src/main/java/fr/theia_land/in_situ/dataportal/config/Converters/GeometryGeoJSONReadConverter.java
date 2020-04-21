@@ -5,7 +5,7 @@
  */
 package fr.theia_land.in_situ.dataportal.config.Converters;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.*;
+import fr.theia_land.in_situ.dataportal.model.POJO.geometry.*;
 import org.bson.Document;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;

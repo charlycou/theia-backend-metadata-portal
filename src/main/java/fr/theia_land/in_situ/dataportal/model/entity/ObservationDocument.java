@@ -5,9 +5,9 @@
  */
 package fr.theia_land.in_situ.dataportal.model.entity;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.Dataset;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.Observation;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.producer.Producer;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.dataset.Dataset;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.Observation;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.producer.Producer;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 

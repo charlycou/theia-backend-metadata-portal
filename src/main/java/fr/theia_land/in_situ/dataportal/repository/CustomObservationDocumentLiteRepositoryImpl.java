@@ -5,17 +5,17 @@
  */
 package fr.theia_land.in_situ.dataportal.repository;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.I18n;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.TheiaVariable;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.model.entity.MapItem;
 import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocumentLite;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassificationTmp;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryTree;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryFacetElement;
-import fr.theia_land.in_situ.dataportal.model.PopupDocument;
-import fr.theia_land.in_situ.dataportal.model.PopupContent;
-import fr.theia_land.in_situ.dataportal.model.ResponseDocument;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.FacetClassificationTmp;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryTree;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryFacetElement;
+import fr.theia_land.in_situ.dataportal.model.POJO.popup.litePopup.PopupDocument;
+import fr.theia_land.in_situ.dataportal.model.POJO.popup.litePopup.PopupContent;
+import fr.theia_land.in_situ.dataportal.model.POJO.ResponseDocument;
 import fr.theia_land.in_situ.import_module.CustomConfig.GenericAggregationOperation;
 import java.time.Instant;
 import java.util.ArrayList;

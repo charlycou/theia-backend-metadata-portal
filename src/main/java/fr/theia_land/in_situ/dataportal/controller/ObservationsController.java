@@ -5,18 +5,19 @@
  */
 package fr.theia_land.in_situ.dataportal.controller;
 
+import fr.theia_land.in_situ.dataportal.model.POJO.ResponseDocument;
+import fr.theia_land.in_situ.dataportal.model.POJO.popup.litePopup.PopupContent;
 import fr.theia_land.in_situ.dataportal.model.entity.MapItem;
 import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocument;
 import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocumentLite;
 import fr.theia_land.in_situ.dataportal.repository.ObservationDocumentLiteRepository;
 import fr.theia_land.in_situ.dataportal.repository.ObservationDocumentRepository;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.producer.Producer;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryTree;
-import fr.theia_land.in_situ.dataportal.model.*;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.dataset.SpatialExtent;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.I18n;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.TheiaVariable;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.producer.Producer;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.FacetClassification;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryTree;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Example;

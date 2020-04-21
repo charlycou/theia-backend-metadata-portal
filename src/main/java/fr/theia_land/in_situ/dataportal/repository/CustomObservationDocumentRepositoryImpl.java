@@ -5,10 +5,10 @@
  */
 package fr.theia_land.in_situ.dataportal.repository;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.producer.Producer;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryFacetElement;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryTree;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.dataset.SpatialExtent;
+import fr.theia_land.in_situ.dataportal.model.POJO.detail.producer.Producer;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryFacetElement;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryTree;
 import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocument;
 import java.util.ArrayList;
 import java.util.HashSet;
