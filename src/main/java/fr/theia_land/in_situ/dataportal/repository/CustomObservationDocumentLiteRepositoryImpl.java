@@ -5,63 +5,39 @@
  */
 package fr.theia_land.in_situ.dataportal.repository;
 
+import fr.theia_land.in_situ.dataportal.model.POJO.ResponseDocument;
 import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.I18n;
 import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.model.POJO.facet.FacetClassification;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.FacetClassificationTmp;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryFacetElement;
+import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryTree;
+import fr.theia_land.in_situ.dataportal.model.POJO.popup.litePopup.PopupContent;
+import fr.theia_land.in_situ.dataportal.model.POJO.popup.litePopup.PopupDocument;
 import fr.theia_land.in_situ.dataportal.model.entity.MapItem;
 import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocumentLite;
-import fr.theia_land.in_situ.dataportal.model.POJO.facet.FacetClassificationTmp;
-import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryTree;
-import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryFacetElement;
-import fr.theia_land.in_situ.dataportal.model.POJO.popup.litePopup.PopupDocument;
-import fr.theia_land.in_situ.dataportal.model.POJO.popup.litePopup.PopupContent;
-import fr.theia_land.in_situ.dataportal.model.POJO.ResponseDocument;
 import fr.theia_land.in_situ.import_module.CustomConfig.GenericAggregationOperation;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.geo.Box;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.facet;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.limit;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.skip;
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.unwind;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOptions;
-import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
-import static org.springframework.data.mongodb.core.aggregation.ArrayOperators.Filter.filter;
-import static org.springframework.data.mongodb.core.aggregation.ComparisonOperators.Eq.valueOf;
-import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
-import org.springframework.data.mongodb.core.aggregation.FacetOperation;
-import org.springframework.data.mongodb.core.aggregation.GroupOperation;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
-import org.springframework.data.mongodb.core.aggregation.ReplaceRootOperation;
-import org.springframework.data.mongodb.core.aggregation.UnwindOperation;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.geo.GeoJsonPolygon;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.TextCriteria;
+
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
+import static org.springframework.data.mongodb.core.aggregation.ArrayOperators.Filter.filter;
+import static org.springframework.data.mongodb.core.aggregation.ComparisonOperators.Eq.valueOf;
 
 /**
  * Implementation of the interface defining custom methods. The repository infrastructure tries to autodetect custom
@@ -71,14 +47,17 @@ import org.springframework.data.mongodb.core.query.TextCriteria;
  */
 public class CustomObservationDocumentLiteRepositoryImpl implements CustomObservationDocumentLiteRepository {
 
-    //Indicate that mongoTemplate must be injected by Spring IoC
-    @Autowired
+    // MongoTemplate is initialized by Spring in config package and injected as a spring bean in IoC container
     private MongoTemplate mongoTemplate;
+    @Autowired
+    public CustomObservationDocumentLiteRepositoryImpl(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
 
     /**
      * Facet aggregation operation that is used to create the facet of the application
      */
-    FacetOperation facetOperation = facet()
+    final FacetOperation facetOperation = facet()
             .and(
                     unwind("observations"),
                     Aggregation.graphLookup("variableCategories")

@@ -10,10 +10,6 @@ import fr.theia_land.in_situ.dataportal.model.POJO.detail.producer.Producer;
 import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryFacetElement;
 import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryTree;
 import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocument;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,17 +17,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOptions;
-import org.springframework.data.mongodb.core.aggregation.ArrayOperators;
-import org.springframework.data.mongodb.core.aggregation.GroupOperation;
-import org.springframework.data.mongodb.core.aggregation.LimitOperation;
-import org.springframework.data.mongodb.core.aggregation.MatchOperation;
-import org.springframework.data.mongodb.core.aggregation.ProjectionOperation;
-import org.springframework.data.mongodb.core.aggregation.ReplaceRootOperation;
-import org.springframework.data.mongodb.core.aggregation.SkipOperation;
-import org.springframework.data.mongodb.core.aggregation.SortOperation;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implementation of the interface defining custom methods. The repository infrastructure tries to autodetect custom
@@ -41,9 +33,13 @@ import org.springframework.data.mongodb.core.query.Criteria;
  */
 public class CustomObservationDocumentRepositoryImpl implements CustomObservationDocumentRepository {
 
-    //Indicate that mongoTemplate must be injected by Spring IoC
-    @Autowired
+    //Indicate that mongoTemplate must be injected by Spring IoC. Mongotemplate initialised by spring
+    //config class using @Bean annotation
     private MongoTemplate mongoTemplate;
+    @Autowired
+    public CustomObservationDocumentRepositoryImpl(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
 
     @Override
     public SpatialExtent findDatasetSpatialExtent(String datasetId) {
