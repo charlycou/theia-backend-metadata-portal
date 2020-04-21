@@ -5,17 +5,12 @@
  */
 package fr.theia_land.in_situ.dataportal.CustomConfig.Converters;
 
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.GeometryGeoJSON;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.LineString;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.MultiLineString;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.MultiPoint;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.MultiPolygon;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.Point;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.Polygon;
-import java.util.List;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.geometry.*;
 import org.bson.Document;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
+
+import java.util.List;
 
 /**
  * @ReadingConverter: Spring data mongodb annotation to enable the class to handle the mapping of DBObject into Java

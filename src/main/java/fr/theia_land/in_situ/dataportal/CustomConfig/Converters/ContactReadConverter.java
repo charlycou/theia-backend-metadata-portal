@@ -6,14 +6,15 @@
 package fr.theia_land.in_situ.dataportal.CustomConfig.Converters;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.Contact;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.Organisation;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.Person;
-import java.util.ArrayList;
-import java.util.List;
+import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
 import org.bson.Document;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**

@@ -5,15 +5,13 @@
  */
 package fr.theia_land.in_situ.dataportal.CustomConfig;
 
-import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.GeometryGeoJSONReadConverter;
-import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.ContactReadConverter;
-import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.SensorReadConverter;
-import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.SamplingFeatureReadConverter;
-import com.mongodb.client.MongoClient;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import java.util.ArrayList;
-import java.util.List;
+import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.ContactReadConverter;
+import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.GeometryGeoJSONReadConverter;
+import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.SamplingFeatureReadConverter;
+import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.SensorReadConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +21,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.WriteResultChecking;
 import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Configuration: allow to register extra Spring beans in the context or import additional configuration classes

@@ -5,39 +5,29 @@
  */
 package fr.theia_land.in_situ.dataportal.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentRepository;
-import fr.theia_land.in_situ.dataportal.model.ObservationDocument;
-import fr.theia_land.in_situ.dataportal.model.ObservationDocumentLite;
-import fr.theia_land.in_situ.dataportal.model.ResponseDocument;
-import java.util.ArrayList;
-import java.util.List;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentLiteRepository;
+import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentRepository;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
-import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.Observation;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.producer.Producer;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.TheiaCategoryTree;
-import fr.theia_land.in_situ.dataportal.model.MapItem;
-import fr.theia_land.in_situ.dataportal.model.PopupContent;
+import fr.theia_land.in_situ.dataportal.model.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Example;
 import io.swagger.annotations.ExampleProperty;
 import org.bson.Document;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -51,10 +41,15 @@ public class ObservationsController {
     /**
      * Inject the repository to be queried
      */
+
+    private final ObservationDocumentLiteRepository observationDocumentLiteRepository;
+    private final ObservationDocumentRepository observationDocumentRepository;
+
     @Autowired
-    private ObservationDocumentLiteRepository observationDocumentLiteRepository;
-    @Autowired
-    private ObservationDocumentRepository observationDocumentRepository;
+    public ObservationsController(ObservationDocumentLiteRepository observationDocumentLiteRepository, ObservationDocumentRepository observationDocumentRepository) {
+        this.observationDocumentLiteRepository = observationDocumentLiteRepository;
+        this.observationDocumentRepository = observationDocumentRepository;
+    }
 
     /**
      * method used to show detailed information about observations

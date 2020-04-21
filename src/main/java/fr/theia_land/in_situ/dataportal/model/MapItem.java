@@ -6,8 +6,9 @@
 package fr.theia_land.in_situ.dataportal.model;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.SamplingFeature;
-import java.util.List;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.List;
 
 /**
  *
