@@ -7,7 +7,7 @@ package fr.theia_land.in_situ.dataportal.repository;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
-import fr.theia_land.in_situ.dataportal.model.ObservationDocumentLite;
+import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocumentLite;
 import fr.theia_land.in_situ.dataportal.model.PopupContent;
 import fr.theia_land.in_situ.dataportal.model.ResponseDocument;
 import java.util.List;

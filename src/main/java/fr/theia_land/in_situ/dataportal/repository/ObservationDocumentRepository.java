@@ -5,7 +5,7 @@
  */
 package fr.theia_land.in_situ.dataportal.repository;
 
-import fr.theia_land.in_situ.dataportal.model.ObservationDocument;
+import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocument;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 

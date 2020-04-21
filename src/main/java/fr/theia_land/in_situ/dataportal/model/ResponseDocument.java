@@ -6,6 +6,8 @@
 package fr.theia_land.in_situ.dataportal.model;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.facet.FacetClassification;
+import fr.theia_land.in_situ.dataportal.model.entity.MapItem;
+import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocumentLite;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

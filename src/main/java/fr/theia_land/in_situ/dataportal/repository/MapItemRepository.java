@@ -5,10 +5,11 @@
  */
 package fr.theia_land.in_situ.dataportal.repository;
 
-import fr.theia_land.in_situ.dataportal.model.MapItem;
-import java.util.List;
+import fr.theia_land.in_situ.dataportal.model.entity.MapItem;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
+
+import java.util.List;
 
 /**
  *

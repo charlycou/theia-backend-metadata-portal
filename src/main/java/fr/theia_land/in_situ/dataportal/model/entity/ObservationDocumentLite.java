@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.theia_land.in_situ.dataportal.model;
+package fr.theia_land.in_situ.dataportal.model.entity;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.lite.DatasetLite;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.lite.ObservationLite;
