@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.theia_land.in_situ.dataportal.DAO;
+package fr.theia_land.in_situ.dataportal.repository;
 
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.producer.Producer;

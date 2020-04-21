@@ -1,4 +1,4 @@
-package fr.theia_land.in_situ.dataportal.DAO;
+package fr.theia_land.in_situ.dataportal.repository;
 
 
 import fr.theia_land.in_situ.dataportal.model.ObservationDocumentLite;

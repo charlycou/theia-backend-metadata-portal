@@ -5,8 +5,8 @@
  */
 package fr.theia_land.in_situ.dataportal.controller;
 
-import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentLiteRepository;
-import fr.theia_land.in_situ.dataportal.DAO.ObservationDocumentRepository;
+import fr.theia_land.in_situ.dataportal.repository.ObservationDocumentLiteRepository;
+import fr.theia_land.in_situ.dataportal.repository.ObservationDocumentRepository;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.dataset.SpatialExtent;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.I18n;
 import fr.theia_land.in_situ.dataportal.mdl.POJO.detail.observation.TheiaVariable;
