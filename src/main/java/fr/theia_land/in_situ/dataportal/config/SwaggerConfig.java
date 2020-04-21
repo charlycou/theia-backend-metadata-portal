@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.theia_land.in_situ.dataportal.CustomConfig;
+package fr.theia_land.in_situ.dataportal.config;
 
 import com.google.common.base.Predicate;
 import static com.google.common.base.Predicates.or;

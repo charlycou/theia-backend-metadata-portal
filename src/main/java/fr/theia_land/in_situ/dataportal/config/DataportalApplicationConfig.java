@@ -3,15 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package fr.theia_land.in_situ.dataportal.CustomConfig;
+package fr.theia_land.in_situ.dataportal.config;
 
 import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.ContactReadConverter;
-import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.GeometryGeoJSONReadConverter;
-import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.SamplingFeatureReadConverter;
-import fr.theia_land.in_situ.dataportal.CustomConfig.Converters.SensorReadConverter;
+import fr.theia_land.in_situ.dataportal.config.Converters.ContactReadConverter;
+import fr.theia_land.in_situ.dataportal.config.Converters.GeometryGeoJSONReadConverter;
+import fr.theia_land.in_situ.dataportal.config.Converters.SamplingFeatureReadConverter;
+import fr.theia_land.in_situ.dataportal.config.Converters.SensorReadConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
