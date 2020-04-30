@@ -4,6 +4,7 @@ package fr.theia_land.in_situ.dataportal.repository;
 import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocumentLite;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  * Interface used by Spring IoC to inject ObservationDocumentLiteRepository implementation when needed
@@ -19,7 +20,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * instanciation.
  * @author coussotc
  */
-
+@Repository
 public interface ObservationDocumentLiteRepository extends MongoRepository<ObservationDocumentLite, ObjectId>,
         CustomObservationDocumentLiteRepository {
 }

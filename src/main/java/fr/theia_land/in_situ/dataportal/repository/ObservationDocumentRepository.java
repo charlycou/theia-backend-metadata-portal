@@ -8,6 +8,7 @@ package fr.theia_land.in_situ.dataportal.repository;
 import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocument;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 /**
  * Interface used by Spring IoC to inject ObservationDocumentRepository implementation when needed
@@ -15,6 +16,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * Spring data will defined ObservationDocumentRepositoryImpl.class that will be injected and instanciated by classes 
  * needing it
  */
+@Repository
 public interface ObservationDocumentRepository extends MongoRepository<ObservationDocument, ObjectId>, CustomObservationDocumentRepository{
     
     /**

@@ -47,7 +47,7 @@ public class PopupContent {
     
     private List<I18n> producerName;
     private  List<I18n> stationName;
-    List<VariableNameAndId> variableNameAndIds;
+    private List<VariableNameAndId> variableNameAndIds;
 
     public List<I18n> getProducerName() {
         return producerName;

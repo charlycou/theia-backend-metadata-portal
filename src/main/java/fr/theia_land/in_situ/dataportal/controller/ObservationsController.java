@@ -6,35 +6,29 @@
 package fr.theia_land.in_situ.dataportal.controller;
 
 import fr.theia_land.in_situ.dataportal.model.POJO.ResponseDocument;
-import fr.theia_land.in_situ.dataportal.model.POJO.popup.litePopup.PopupContent;
-import fr.theia_land.in_situ.dataportal.model.entity.MapItem;
-import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocument;
-import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocumentLite;
-import fr.theia_land.in_situ.dataportal.repository.ObservationDocumentLiteRepository;
-import fr.theia_land.in_situ.dataportal.repository.ObservationDocumentRepository;
 import fr.theia_land.in_situ.dataportal.model.POJO.detail.dataset.SpatialExtent;
 import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.I18n;
 import fr.theia_land.in_situ.dataportal.model.POJO.detail.observation.TheiaVariable;
 import fr.theia_land.in_situ.dataportal.model.POJO.detail.producer.Producer;
 import fr.theia_land.in_situ.dataportal.model.POJO.facet.FacetClassification;
-import fr.theia_land.in_situ.dataportal.model.POJO.facet.TheiaCategoryTree;
+import fr.theia_land.in_situ.dataportal.model.POJO.popup.litePopup.PopupContent;
+import fr.theia_land.in_situ.dataportal.model.entity.MapItem;
+import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocument;
+import fr.theia_land.in_situ.dataportal.model.entity.ObservationDocumentLite;
+import fr.theia_land.in_situ.dataportal.service.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.Example;
 import io.swagger.annotations.ExampleProperty;
 import org.bson.Document;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
+
 /**
- *
  * @author coussotc
  */
 @RestController
@@ -45,14 +39,19 @@ public class ObservationsController {
     /**
      * Inject the repository to be queried
      */
-
-    private final ObservationDocumentLiteRepository observationDocumentLiteRepository;
-    private final ObservationDocumentRepository observationDocumentRepository;
+    private final PageService pageService;
+    private final FacetService facetService;
+    private final PopupService popupService;
+    private final DetailService detailService;
+    private final SearchService searchService;
 
     @Autowired
-    public ObservationsController(ObservationDocumentLiteRepository observationDocumentLiteRepository, ObservationDocumentRepository observationDocumentRepository) {
-        this.observationDocumentLiteRepository = observationDocumentLiteRepository;
-        this.observationDocumentRepository = observationDocumentRepository;
+    public ObservationsController(PageService pageService, FacetService facetService, PopupService popupService, DetailService detailService, SearchService searchService) {
+        this.pageService = pageService;
+        this.facetService = facetService;
+        this.popupService = popupService;
+        this.detailService = detailService;
+        this.searchService = searchService;
     }
 
     /**
@@ -71,15 +70,10 @@ public class ObservationsController {
                     value = "Example (quotes inside brackets can be badly escaped by UI...):\n [\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]",
                     example = "[\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]",
                     examples = @Example(value = {
-                @ExampleProperty(value = "[\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]")
-            }))
+                            @ExampleProperty(value = "[\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]")
+                    }))
             @RequestBody String payload) {
-        List<ObservationDocument> observationDocuments = new ArrayList<>();
-        JSONArray jsonDocumentIds = new JSONArray(payload);
-        jsonDocumentIds.forEach(item -> {
-            observationDocuments.add(this.observationDocumentRepository.findByDocumentId((String) item));
-        });
-        return observationDocuments;
+        return this.searchService.findByDocumentId(payload);
     }
 
     /**
@@ -87,7 +81,7 @@ public class ObservationsController {
      * collection using the uri of the theia vairable and the coordinantes field of a geoJson object
      *
      * @param payload String -
-     * {\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}
+     *                {\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}
      * @return List of String corresponding to the ids queried
      */
     @ApiOperation(value = "Finds observationId of a TheiaVariable at a given location ",
@@ -99,10 +93,10 @@ public class ObservationsController {
             @ApiParam(required = true,
                     value = "Example (quotes inside brackets can be badly escaped by UI...):\n {\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}",
                     examples = @Example(value = {
-                @ExampleProperty(value = "{\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}")
-            }))
+                            @ExampleProperty(value = "{\"uri\":\"https://w3id.org/ozcar-theia/variables/organicCarbon\",\"coordinates\":[6.239739,47.04832,370]}")
+                    }))
             @RequestBody String payload) {
-        return this.observationDocumentLiteRepository.getObservationIdsOfOtherTheiaVariableAtLocation(payload);
+        return this.searchService.getObservationIdsOfOtherTheiaVariableAtLocation(payload);
     }
 
     /**
@@ -121,10 +115,10 @@ public class ObservationsController {
             @ApiParam(required = true,
                     value = "Example (quotes inside brackets can be badly escaped by UI...):\n [3.795429,43.64558,0]",
                     examples = @Example(value = {
-                @ExampleProperty(value = "[3.795429,43.64558,0]")
-            }))
+                            @ExampleProperty(value = "[3.795429,43.64558,0]")
+                    }))
             @RequestBody String payload) {
-        return this.observationDocumentLiteRepository.getVariablesAtOneLocation(payload);
+        return this.searchService.getVariablesAtOneLocation(payload);
     }
 
     /**
@@ -145,7 +139,7 @@ public class ObservationsController {
                     value = "Example (quotes inside brackets can be badly escaped by UI...):\n KARS_DAT_MOSSON-1",
                     example = "KARS_DAT_MOSSON-1")
             @PathVariable String datasetId) {
-        return this.observationDocumentLiteRepository.getObservationsOfADataset(datasetId);
+        return this.searchService.getObservationsOfADataset(datasetId);
     }
 
     /**
@@ -164,7 +158,7 @@ public class ObservationsController {
                     value = "Example (quotes inside brackets can be badly escaped by UI...):\n KARS_DAT_MOSSON-1",
                     example = "KARS_DAT_MOSSON-1")
             @PathVariable String datasetId) {
-        return this.observationDocumentRepository.findDatasetSpatialExtent(datasetId);
+        return this.searchService.getBBOXOfOfADataset(datasetId);
     }
 
     /**
@@ -183,35 +177,9 @@ public class ObservationsController {
                     value = "Example (quotes inside brackets can be badly escaped by UI...):\n [\"https://w3id.org/ozcar-theia/surfaceWaterMajorIons\"]",
                     example = "[\"https://w3id.org/ozcar-theia/surfaceWaterMajorIons\"]")
             @RequestBody List<String> payload) {
-        List<TheiaCategoryTree> theiaCategoryTrees = this.observationDocumentRepository.getCategoryHierarchies(payload);
-        List<List<List<I18n>>> categoriesHierarchies = new ArrayList();
-        for (TheiaCategoryTree tct : theiaCategoryTrees) {
-            categoriesHierarchies.addAll(setCategoryBranches(tct));
-        }
-        return categoriesHierarchies;
+        return this.facetService.getCategoryHierarchies(payload);
     }
 
-    private List<List<List<I18n>>> setCategoryBranches(TheiaCategoryTree tct) {
-        List<List<List<I18n>>> resultList = new ArrayList();
-        if (tct.getBroaders() != null && tct.getBroaders().size() > 0) {
-            for (TheiaCategoryTree broader : tct.getBroaders()) {
-                resultList.addAll(setCategoryBranches(broader));
-            }
-        }
-        if (resultList.size() > 0) {
-            List<List<List<I18n>>> tmpResultList = new ArrayList<>();
-            for (List<List<I18n>> list : resultList) {
-                list.add(tct.getPrefLabel());
-                tmpResultList.add(list);
-            }
-            return tmpResultList;
-        } else {
-            List<List<I18n>> tmp = new ArrayList();
-            tmp.add(tct.getPrefLabel());
-            resultList.add(tmp);
-            return resultList;
-        }
-    }
 
     /**
      * Method used to query the database using defined filters
@@ -221,83 +189,83 @@ public class ObservationsController {
      */
     @ApiOperation(value = "Query documents from 'ObservationsLite' and 'MapItems' collections using the filters defined by he user",
             notes = "The documents are queried using the filters json object. The list of observation and the mapItems document are return"
-            + "and the facet element are recalculated.",
+                    + "and the facet element are recalculated.",
             response = FacetClassification.class)
     @PostMapping("/searchObservations")
     public ResponseDocument searchObservations(@ApiParam(required = true,
             value = "Example (quotes inside brackets can be badly escaped by UI...):\n {\n"
-            + "	\"temporalExtents\": [{\n"
-            + "		\"position\": 1,\n"
-            + "		\"fromDate\": \"1996-07-22T22:00:00.000Z\",\n"
-            + "		\"toDate\": \"2019-07-30T22:00:00.000Z\"\n"
-            + "	}],\n"
-            + "	\"spatialExtent\": {\n"
-            + "		\"type\": \"FeatureCollection\",\n"
-            + "		\"features\": [{\n"
-            + "			\"type\": \"Feature\",\n"
-            + "			\"properties\": {},\n"
-            + "			\"geometry\": {\n"
-            + "				\"type\": \"Polygon\",\n"
-            + "				\"coordinates\": [\n"
-            + "					[\n"
-            + "						[5.87142, 44.944389],\n"
-            + "						[5.87142, 45.73686],\n"
-            + "						[7.25419, 45.73686],\n"
-            + "						[7.25419, 44.944389],\n"
-            + "						[5.87142, 44.944389]\n"
-            + "					]\n"
-            + "				]\n"
-            + "			}\n"
-            + "		}]\n"
-            + "	},\n"
-            + "	\"climates\": [\"Mountain climate\"],\n"
-            + "	\"geologies\": [\"Plutonic rocks\"],\n"
-            + "	\"producerNames\": [\"CRYOBS-CLIM\"],\n"
-            + "	\"fundingNames\": [],\n"
-            + "	\"fundingAcronyms\": [],\n"
-            + "	\"fullText\": null,\n"
-            + "	\"theiaCategories\": [\"https://w3id.org/ozcar-theia/solidPrecipitation\", \"https://w3id.org/ozcar-theia/liquidPrecipitation\", \"https://w3id.org/ozcar-theia/atmosphericRadiation\", \"https://w3id.org/ozcar-theia/atmosphericWaterVapor\", \"https://w3id.org/ozcar-theia/atmosphericChemistry\", \"https://w3id.org/ozcar-theia/atmosphericTemperature\", \"https://w3id.org/ozcar-theia/atmosphericPressure\", \"https://w3id.org/ozcar-theia/wind\", \"https://w3id.org/ozcar-theia/surfaceFluxes\"],\n"
-            + "	\"theiaVariables\": []\n"
-            + "}",
+                    + "	\"temporalExtents\": [{\n"
+                    + "		\"position\": 1,\n"
+                    + "		\"fromDate\": \"1996-07-22T22:00:00.000Z\",\n"
+                    + "		\"toDate\": \"2019-07-30T22:00:00.000Z\"\n"
+                    + "	}],\n"
+                    + "	\"spatialExtent\": {\n"
+                    + "		\"type\": \"FeatureCollection\",\n"
+                    + "		\"features\": [{\n"
+                    + "			\"type\": \"Feature\",\n"
+                    + "			\"properties\": {},\n"
+                    + "			\"geometry\": {\n"
+                    + "				\"type\": \"Polygon\",\n"
+                    + "				\"coordinates\": [\n"
+                    + "					[\n"
+                    + "						[5.87142, 44.944389],\n"
+                    + "						[5.87142, 45.73686],\n"
+                    + "						[7.25419, 45.73686],\n"
+                    + "						[7.25419, 44.944389],\n"
+                    + "						[5.87142, 44.944389]\n"
+                    + "					]\n"
+                    + "				]\n"
+                    + "			}\n"
+                    + "		}]\n"
+                    + "	},\n"
+                    + "	\"climates\": [\"Mountain climate\"],\n"
+                    + "	\"geologies\": [\"Plutonic rocks\"],\n"
+                    + "	\"producerNames\": [\"CRYOBS-CLIM\"],\n"
+                    + "	\"fundingNames\": [],\n"
+                    + "	\"fundingAcronyms\": [],\n"
+                    + "	\"fullText\": null,\n"
+                    + "	\"theiaCategories\": [\"https://w3id.org/ozcar-theia/solidPrecipitation\", \"https://w3id.org/ozcar-theia/liquidPrecipitation\", \"https://w3id.org/ozcar-theia/atmosphericRadiation\", \"https://w3id.org/ozcar-theia/atmosphericWaterVapor\", \"https://w3id.org/ozcar-theia/atmosphericChemistry\", \"https://w3id.org/ozcar-theia/atmosphericTemperature\", \"https://w3id.org/ozcar-theia/atmosphericPressure\", \"https://w3id.org/ozcar-theia/wind\", \"https://w3id.org/ozcar-theia/surfaceFluxes\"],\n"
+                    + "	\"theiaVariables\": []\n"
+                    + "}",
             examples = @Example(value = {
-        @ExampleProperty(value = "{\n"
-                + "	\"temporalExtents\": [{\n"
-                + "		\"position\": 1,\n"
-                + "		\"fromDate\": \"1996-07-22T22:00:00.000Z\",\n"
-                + "		\"toDate\": \"2019-07-30T22:00:00.000Z\"\n"
-                + "	}],\n"
-                + "	\"spatialExtent\": {\n"
-                + "		\"type\": \"FeatureCollection\",\n"
-                + "		\"features\": [{\n"
-                + "			\"type\": \"Feature\",\n"
-                + "			\"properties\": {},\n"
-                + "			\"geometry\": {\n"
-                + "				\"type\": \"Polygon\",\n"
-                + "				\"coordinates\": [\n"
-                + "					[\n"
-                + "						[5.87142, 44.944389],\n"
-                + "						[5.87142, 45.73686],\n"
-                + "						[7.25419, 45.73686],\n"
-                + "						[7.25419, 44.944389],\n"
-                + "						[5.87142, 44.944389]\n"
-                + "					]\n"
-                + "				]\n"
-                + "			}\n"
-                + "		}]\n"
-                + "	},\n"
-                + "	\"climates\": [\"Mountain climate\"],\n"
-                + "	\"geologies\": [\"Plutonic rocks\"],\n"
-                + "	\"producerNames\": [\"CRYOBS-CLIM\"],\n"
-                + "	\"fundingNames\": [],\n"
-                + "	\"fundingAcronyms\": [],\n"
-                + "	\"fullText\": null,\n"
-                + "	\"theiaCategories\": [\"https://w3id.org/ozcar-theia/solidPrecipitation\", \"https://w3id.org/ozcar-theia/liquidPrecipitation\", \"https://w3id.org/ozcar-theia/atmosphericRadiation\", \"https://w3id.org/ozcar-theia/atmosphericWaterVapor\", \"https://w3id.org/ozcar-theia/atmosphericChemistry\", \"https://w3id.org/ozcar-theia/atmosphericTemperature\", \"https://w3id.org/ozcar-theia/atmosphericPressure\", \"https://w3id.org/ozcar-theia/wind\", \"https://w3id.org/ozcar-theia/surfaceFluxes\"],\n"
-                + "	\"theiaVariables\": []\n"
-                + "}")
-    }))
-            @RequestBody String payload) {
-        ResponseDocument response = this.observationDocumentLiteRepository.searchObservations(payload);
-        return response;
+                    @ExampleProperty(value = "{\n"
+                            + "	\"temporalExtents\": [{\n"
+                            + "		\"position\": 1,\n"
+                            + "		\"fromDate\": \"1996-07-22T22:00:00.000Z\",\n"
+                            + "		\"toDate\": \"2019-07-30T22:00:00.000Z\"\n"
+                            + "	}],\n"
+                            + "	\"spatialExtent\": {\n"
+                            + "		\"type\": \"FeatureCollection\",\n"
+                            + "		\"features\": [{\n"
+                            + "			\"type\": \"Feature\",\n"
+                            + "			\"properties\": {},\n"
+                            + "			\"geometry\": {\n"
+                            + "				\"type\": \"Polygon\",\n"
+                            + "				\"coordinates\": [\n"
+                            + "					[\n"
+                            + "						[5.87142, 44.944389],\n"
+                            + "						[5.87142, 45.73686],\n"
+                            + "						[7.25419, 45.73686],\n"
+                            + "						[7.25419, 44.944389],\n"
+                            + "						[5.87142, 44.944389]\n"
+                            + "					]\n"
+                            + "				]\n"
+                            + "			}\n"
+                            + "		}]\n"
+                            + "	},\n"
+                            + "	\"climates\": [\"Mountain climate\"],\n"
+                            + "	\"geologies\": [\"Plutonic rocks\"],\n"
+                            + "	\"producerNames\": [\"CRYOBS-CLIM\"],\n"
+                            + "	\"fundingNames\": [],\n"
+                            + "	\"fundingAcronyms\": [],\n"
+                            + "	\"fullText\": null,\n"
+                            + "	\"theiaCategories\": [\"https://w3id.org/ozcar-theia/solidPrecipitation\", \"https://w3id.org/ozcar-theia/liquidPrecipitation\", \"https://w3id.org/ozcar-theia/atmosphericRadiation\", \"https://w3id.org/ozcar-theia/atmosphericWaterVapor\", \"https://w3id.org/ozcar-theia/atmosphericChemistry\", \"https://w3id.org/ozcar-theia/atmosphericTemperature\", \"https://w3id.org/ozcar-theia/atmosphericPressure\", \"https://w3id.org/ozcar-theia/wind\", \"https://w3id.org/ozcar-theia/surfaceFluxes\"],\n"
+                            + "	\"theiaVariables\": []\n"
+                            + "}")
+            }))
+                                               @RequestBody String payload) {
+        return this.searchService.searchObservations(payload);
+
     }
 
     /**
@@ -310,14 +278,14 @@ public class ObservationsController {
             response = FacetClassification.class)
     @GetMapping("/initFacets")
     public FacetClassification initFacets() {
-        return this.observationDocumentLiteRepository.initFacets();
+        return this.facetService.initFacets();
     }
 
     /**
      * Method used to change the page of the paginated ObservationDocumentLite resulting from a query
      *
      * @param payload String that can be parsed into json object containg the filters used to query the database, the
-     * pageSelected and the number observation per page
+     *                pageSelected and the number observation per page
      * @return Page of ObservationDocumentLite object
      */
     @ApiOperation(value = "Find the document to print in tte observation from 'ObservationsLite' collection  ",
@@ -328,21 +296,17 @@ public class ObservationsController {
     public Page<ObservationDocumentLite> getObservationsPage(@ApiParam(required = true,
             value = "Example (quotes inside brackets can be badly escaped by UI...):\n {\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}",
             examples = @Example(value = {
-        @ExampleProperty(value = "{\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}")
-    }))
-            @RequestBody String payload) {
-        JSONObject jsonPayload = new JSONObject(payload);
-        return this.observationDocumentLiteRepository.getObservationsPage(
-                this.observationDocumentLiteRepository.setMatchOperationUsingFilters(jsonPayload.getJSONObject("filters").toString(), null),
-                PageRequest.of(jsonPayload.getInt("pageSelected") - 1,
-                        jsonPayload.getInt("pageSize")));
+                    @ExampleProperty(value = "{\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}")
+            }))
+                                                             @RequestBody String payload) {
+        return this.pageService.getObservationsPage(payload);
     }
 
     /**
      * Method use to load the content of a popup to be printed on ui
      *
      * @param payload String to be parsed into json Object containing the ids of the observation from which variable
-     * names need to be printed on the map.
+     *                names need to be printed on the map.
      * @return PopupContent object
      */
     @ApiOperation(value = "Load the content of a map popup ",
@@ -353,10 +317,10 @@ public class ObservationsController {
             value = "Example (quotes inside brackets can be badly escaped by UI...):\n [\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]",
             example = "[\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]",
             examples = @Example(value = {
-        @ExampleProperty(value = "[\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]")
-    }))
-            @RequestBody List<String> payload) {
-        return this.observationDocumentLiteRepository.loadPopupContent(payload);
+                    @ExampleProperty(value = "[\"CATC_OBS_CL.Rain_Nig_3\",\"CATC_OBS_CL.Rain_Nig_18\",\"CATC_OBS_CL.Rain_Nig_14\"]")
+            }))
+                                         @RequestBody List<String> payload) {
+        return this.popupService.getPopupContent(payload);
     }
 
     /**
@@ -372,7 +336,7 @@ public class ObservationsController {
     )
     @GetMapping("/getProducersInfo")
     public List<Producer> getProducerInfo() {
-        return this.observationDocumentRepository.getProducersInfo();
+        return this.facetService.getProducerInfo();
     }
 
     @ApiOperation(value = "Load detailed information about one producer",
@@ -385,21 +349,20 @@ public class ObservationsController {
                     value = "Example (quotes inside brackets can be badly escaped by UI...):\n KARS",
                     example = "KARS")
             @PathVariable String producerId) {
-        return this.observationDocumentRepository.getProducerDetailed(producerId);
-
+        return this.detailService.getProducerDetailed(producerId);
     }
-    
-        @ApiOperation(value = "Load detailed information about one producer",
+
+    @ApiOperation(value = "Load detailed information about one dataset",
             notes = "Document are queried from the 'observations' collection",
             response = Producer.class
     )
-    @GetMapping("showDatasetDetailed/{producerId}")
+    @GetMapping("showDatasetDetailed/{datasetId}")
     public ObservationDocument showDatasetDetailed(
             @ApiParam(required = true,
                     value = "Example (quotes inside brackets can be badly escaped by UI...):\n KARS",
                     example = "KARS")
-            @PathVariable String producerId) {
-        return this.observationDocumentRepository.getDatasetDetailed(producerId);
+            @PathVariable String datasetId) {
+        return this.detailService.getDatasetDetailed(datasetId);
 
     }
 
@@ -408,29 +371,20 @@ public class ObservationsController {
     public Page<Producer> getProducerPage(@ApiParam(required = true,
             value = "Example (quotes inside brackets can be badly escaped by UI...):\n {\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}",
             examples = @Example(value = {
-        @ExampleProperty(value = "{\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}")
-    }))
-            @RequestBody String payload) {
-        JSONObject jsonPayload = new JSONObject(payload);
-        List<String> producerIds = this.observationDocumentLiteRepository.getDatasetOrProducerIds(
-                this.observationDocumentLiteRepository.setMatchOperationUsingFilters(jsonPayload.getJSONObject("filters").toString(), "producer"));
-        return this.observationDocumentRepository.getProducersPage(producerIds, PageRequest.of(jsonPayload.getInt("pageSelected") - 1,
-                jsonPayload.getInt("pageSize")));
-
+                    @ExampleProperty(value = "{\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}")
+            }))
+                                          @RequestBody String payload) {
+        return this.pageService.getProducerPage(payload);
     }
 
     @PostMapping("changeDatasetPage")
     public Page<Document> getDatastetPage(@ApiParam(required = true,
             value = "Example (quotes inside brackets can be badly escaped by UI...):\n {\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}",
             examples = @Example(value = {
-        @ExampleProperty(value = "{\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}")
-    }))
-            @RequestBody String payload) {
-        JSONObject jsonPayload = new JSONObject(payload);
-        List<String> datasetIds = this.observationDocumentLiteRepository.getDatasetOrProducerIds(
-                this.observationDocumentLiteRepository.setMatchOperationUsingFilters(jsonPayload.getJSONObject("filters").toString(), "dataset"));
-        return this.observationDocumentRepository.getDatasetsPage(datasetIds, PageRequest.of(jsonPayload.getInt("pageSelected") - 1,
-                jsonPayload.getInt("pageSize")));
+                    @ExampleProperty(value = "{\"filters\":{\"temporalExtents\":[],\"spatialExtent\":null,\"climates\":[],\"geologies\":[\"Quartenary soils\"],\"producerNames\":[],\"fundingNames\":[],\"fundingAcronyms\":[],\"fullText\":null,\"theiaCategories\":[],\"theiaVariables\":[]},\"pageSize\":10,\"pageSelected\":2}")
+            }))
+                                          @RequestBody String payload) {
+        return this.pageService.getDatasetPage(payload);
     }
 
 }

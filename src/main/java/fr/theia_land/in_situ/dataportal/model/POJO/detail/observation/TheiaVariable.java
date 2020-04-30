@@ -7,7 +7,6 @@ package fr.theia_land.in_situ.dataportal.model.POJO.detail.observation;
 
 import java.util.List;
 import java.util.Objects;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  *
@@ -35,7 +34,7 @@ public class TheiaVariable {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(this.uri).toHashCode();
+        return Objects.hashCode(this.uri);
     }
 
     @Override

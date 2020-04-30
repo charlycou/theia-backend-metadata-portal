@@ -24,6 +24,8 @@ public class FacetClassification {
     private List<ElementaryCount> producerNamesFacet;
     private List<ElementaryCount> totalCount;
 
+    public FacetClassification() {}
+
     public FacetClassification(List<TheiaVariable> theiaVariables, List<TheiaCategoryTree> theiaCategoryTree, List<FundingsCount> fundingNamesFacet, List<ElementaryCount> climatesFacet, List<ElementaryCount> geologiesFacet, List<ElementaryCount> producerNamesFacet, List<ElementaryCount> totalCount) {
         this.theiaVariables = theiaVariables;
         this.theiaCategoryTree = theiaCategoryTree;

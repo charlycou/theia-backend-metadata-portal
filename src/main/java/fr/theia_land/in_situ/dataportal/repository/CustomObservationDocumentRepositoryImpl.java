@@ -19,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import java.util.Set;
  * namespace element's attribute repository-impl-postfix to the classname. This suffix defaults to Impl. Then, Spring
  * pick up the custom bean by name rather than creating an instance.
  */
+@Repository
 public class CustomObservationDocumentRepositoryImpl implements CustomObservationDocumentRepository {
 
     //Indicate that mongoTemplate must be injected by Spring IoC. Mongotemplate initialised by spring

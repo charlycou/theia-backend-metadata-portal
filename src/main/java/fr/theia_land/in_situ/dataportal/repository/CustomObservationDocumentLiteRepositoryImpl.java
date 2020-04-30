@@ -45,6 +45,7 @@ import static org.springframework.data.mongodb.core.aggregation.ComparisonOperat
  * namespace element's attribute repository-impl-postfix to the classname. This suffix defaults to Impl. Then, Spring
  * pick up the custom bean by name rather than creating an instance.
  */
+
 public class CustomObservationDocumentLiteRepositoryImpl implements CustomObservationDocumentLiteRepository {
 
     // MongoTemplate is initialized by Spring in config package and injected as a spring bean in IoC container

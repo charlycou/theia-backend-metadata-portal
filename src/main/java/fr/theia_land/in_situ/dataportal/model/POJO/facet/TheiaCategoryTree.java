@@ -25,7 +25,7 @@ public class TheiaCategoryTree {
     private List<TheiaCategoryTree> broaders;
     private List<TheiaVariable> theiaVariables;
 
-    private TheiaCategoryTree() {
+    public TheiaCategoryTree() {
     }
 
     public static TheiaCategoryTree withNarrowers(String uri, List<I18n> prefLabel, Set<TheiaCategoryTree> narrowers, int count) {
